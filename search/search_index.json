@@ -142,13 +142,13 @@
         }, 
         {
             "location": "/ctfs/own/eko2017/kidnapped/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Kidnapped"
         }, 
         {
-            "location": "/ctfs/own/eko2017/kidnapped/#placeholder", 
+            "location": "/ctfs/own/eko2017/kidnapped/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }, 
         {
             "location": "/ctfs/own/eko2018/kidnapped_revenge/", 
@@ -302,13 +302,13 @@
         }, 
         {
             "location": "/ctfs/own/eko2019/defuse_bomb/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Defuse the bomb"
         }, 
         {
-            "location": "/ctfs/own/eko2019/defuse_bomb/#placeholder", 
+            "location": "/ctfs/own/eko2019/defuse_bomb/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }, 
         {
             "location": "/ctfs/own/eko2019/guess_my_number/", 
@@ -342,43 +342,43 @@
         }, 
         {
             "location": "/tiny_tools/almost_sudo/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Almost sudo"
         }, 
         {
-            "location": "/tiny_tools/almost_sudo/#placeholder", 
+            "location": "/tiny_tools/almost_sudo/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }, 
         {
             "location": "/tiny_tools/pastemon/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Pastemon"
         }, 
         {
-            "location": "/tiny_tools/pastemon/#placeholder", 
+            "location": "/tiny_tools/pastemon/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }, 
         {
             "location": "/arduino/robot/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Robot"
         }, 
         {
-            "location": "/arduino/robot/#placeholder", 
+            "location": "/arduino/robot/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }, 
         {
             "location": "/etw/introduction/", 
-            "text": "PlaceHolder", 
+            "text": "Coming Soon..", 
             "title": "Introduction"
         }, 
         {
-            "location": "/etw/introduction/#placeholder", 
+            "location": "/etw/introduction/#coming-soon", 
             "text": "", 
-            "title": "PlaceHolder"
+            "title": "Coming Soon.."
         }
     ]
 }
