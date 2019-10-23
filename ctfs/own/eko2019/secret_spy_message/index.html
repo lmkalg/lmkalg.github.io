@@ -32,7 +32,11 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "PlaceHolder", url: "#_top", children: [
+          {title: "Secret Spy Message", url: "#_top", children: [
+              {title: "Description", url: "#description" },
+              {title: "Statement", url: "#statement" },
+              {title: "File", url: "#file" },
+              {title: "Solution", url: "#solution" },
           ]},
         ];
 
@@ -83,40 +87,55 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
 
-    <h1 id="placeholder">PlaceHolder</h1>
+    <h1 id="secret-spy-message">Secret Spy Message</h1>
+<h2 id="description">Description</h2>
+<p><em> Category: Steganography 
+</em> Points: 100 / 500 
+* Goal: Fun and learn about DTMF</p>
+<h2 id="statement">Statement</h2>
+<p>Our secret spy has recorded something that seems useful but we don't know how! Can you help us? 
+The flag is: ONA{sha1(password)}</p>
+<p>====</p>
+<p>Nuestro espía secreto grabó algo que parece ser útil pero no sabemos cómo utilizarlo! Nos ayudás?
+El flag es: ONA{sha1(password)}</p>
+<h2 id="file">File</h2>
+<p><a href="../resources/audio_espia.wav">audio.wav</a></p>
+<h2 id="solution">Solution</h2>
+<p>This challenge was built with the goal of having some fun. It didn't require knowledge but just a little bit of googling and the correct tools. </p>
+<p>The file provided is a <strong>.wav</strong> file (audio) with some noises. If you listen for a couple of secs the audio you'll notice that sound is familiar. Seems to be the sound made by a phone when you're dialing. 
+It could be possible to know what was dialed?</p>
+<p>Well, this sound is not other than the signal being sent through the telecommunication channel. With some googling you can find that this type of encoding is called DTMF. </p>
+<p>So now we have an audio of DTMF tones that we want to decode (we want to get the key that was pressed from its sound).</p>
+<p>The following table can be found in this <a href="https://d2vlcm61l7u1fs.cloudfront.net/media%2F18a%2F18a25efb-bfe0-45c9-a346-40e3cb2725d1%2Fphpf6Sv2C.png">link</a>:
+<img alt="" src="../resources/dtmf_table.png" /></p>
+<p>It depicts the combination of frequencies for each of the different numbers.</p>
+<p>Therefore, we could analyze the frequency spectrum of the audio with some tool (like Audacity) and match each time a key was pressed with the corresponding frequency to actually get the pressed number.</p>
+<p>Fortunately, some automatic tools which will do the work for us already exists. 
+The one I used was <a href="http://manpages.ubuntu.com/manpages/trusty/man1/dtmfcheck.1.html">dtmfcheck</a> for linux. It's not the only one, Audacity has a plugin called <strong>phonalyzer</strong> that will do the job as well. Otherwise, manual analysis will take longer but still would have been useful. </p>
+<p>With <strong>dtmfcheck</strong> we just need to run provide the <strong>.wav</strong> file as input: 
+<img alt="" src="../resources/dtmfcheck.png" /></p>
+<p>Analyzing the output we will see that we have the numbers that were pressed (just afrter the "Detected" string). 
+With the following command line we can extract them without any space between them: </p>
+<pre><code class="bash">dtmfcheck audio_espia.wav | awk -F Detected '{print $2}' | cut -f1 -d '(' | tr -d &quot;\n&quot; | tr -d ' '
+</code></pre>
+
+<p>Why we put it all of them together? Because the tool is capable of determing which keys were pressed but sometimes the pause between them may cause issues. For example: if the serie <strong>777777</strong> was dialed, it wouldn't be possible to distinguish between <strong>77</strong>,<strong>7777</strong> and <strong>777</strong>,<strong>777</strong> (which, as we are gonna see later, are different things).</p>
+<p>In order to solve that we should carefully listen again the audio and create insert the pauses manually where they are.</p>
+<p>Once this action is carried out, we end up with the following message: </p>
+<pre><code>8 44 33 7 2 7777 7777 9 666 777 3 444 7777 6 666 66 55 33 999 7777 2 777 33 222 666 666 555 444 333 999 666 88 4 444 888 33 8 44 33 6 22 2 66 2 66 2 7777
+</code></pre>
+
+<p>Taking into account that it should be a message, and that a phone was used, it is possible to deduce that it was written as SMS in older phones used to do. Again, some googling and using a very well known page for encoding/encryption algorithms (<a href="https://dcode.fr">dcode</a>), we find out that we have a way to """decrypt""" it (called <strong>Multi-tap Cipher (SMS Mode ABC)</strong>).</p>
+<p>After decryption we get: the string:</p>
+<pre><code>THEPASSWORDISMONKEYSARECOOLIFYOUGIVETHEMBANANAS
+</code></pre>
+
+<p>Due to the format of the flag requires the "ONA{}" the final answer is: 
+<img alt="" src="../resources/sha1sum.png" /></p>
+<pre><code>ONA{8cce9ae2618ea9aff3a00f90c99e570842c528e9}
+</code></pre>
 
   <br>
-    
-
-    
-    
-      
-      
-    
-
-  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
-    
-    <div class="wm-article-nav pull-right">
-      <a href="../rich_text/" class="btn btn-xs btn-default pull-right">
-        Next
-        <i class="fa fa-chevron-right" aria-hidden="true"></i>
-      </a>
-      <a href="../rich_text/" class="btn btn-xs btn-link">
-        The Rich Text
-      </a>
-    </div>
-    
-    <div class="wm-article-nav">
-      <a href="../../eko2018/kidnapped_revenge/" class="btn btn-xs btn-default pull-left">
-        <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        Previous</a><a href="../../eko2018/kidnapped_revenge/" class="btn btn-xs btn-link">
-        Kidnapped the Revenge
-      </a>
-    </div>
-    
-  </div>
-
-    <br>
 </div>
 
 <footer class="col-md-12 wm-page-content">

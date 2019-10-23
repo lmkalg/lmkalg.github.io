@@ -32,7 +32,11 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "PlaceHolder", url: "#_top", children: [
+          {title: "The Rich Text", url: "#_top", children: [
+              {title: "Description", url: "#description" },
+              {title: "Statement", url: "#statement" },
+              {title: "File", url: "#file" },
+              {title: "Solution", url: "#solution" },
           ]},
         ];
 
@@ -83,40 +87,89 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
 
-    <h1 id="placeholder">PlaceHolder</h1>
+    <h1 id="the-rich-text">The Rich Text</h1>
+<h2 id="description">Description</h2>
+<p><em> Category: Cryptography
+</em> Points: 150 / 500 
+* Goal: Understand the risks of XORing</p>
+<h2 id="statement">Statement</h2>
+<p>A student has encrypted a file with a really powerful technique (according to him). Can you decrypt it?</p>
+<p>====</p>
+<p>Un estudiante cifró un archivo con una poderosa técnica (según él). Podés decifrarlo?</p>
+<h2 id="file">File</h2>
+<p><a href="../resources/text.enc">encrypted text</a></p>
+<h2 id="solution">Solution</h2>
+<p>The very first part of this challenge aimed to play with a little bit of deduction from "metainformation". In other words:
+<em> You've been provided with an encrypted file and nothing else.
+</em> The amount of points of this challenge isn't high, meaning that the technique should be something easy. 
+* Quote from the statement: "[..] with a powerful technique (according to him) [...] "</p>
+<p>What is the most common technique that usually people think is really good for encrypting data but almost always fails to work? And also this technique should be known by any student?
+Yes! The answer is XOR. </p>
+<p>Now, even if we know that a XOR was used, we need to know against what was XORed to try to recover the information. </p>
+<p>From where else can we get some data.. Maybe from the title of the challenge? "The Rich text" ? 
+After some <a href="https://lmgtfy.com/?q=the+rich+text&amp;s=g&amp;t=w">googling</a>, the first finding talks about a very well known file format (<strong>.rtf</strong>). </p>
+<p>So at this point, we can think that we know the format of the file that was XORed. If we know the format, means that we know some information of the file, in particular, most formats have what are called <strong>magic bytes</strong> that should be present always. </p>
+<p>The magic bytes of <strong>.rtf</strong> are: <strong>7B 5C 72 74 66 31</strong> or in ascii: <strong>{\rtf1</strong>. These should be the first 6 bytes of our result. </p>
+<p>Doing some math: 
+1. plain_text ⊕ key = cipher_text 
+2. plain_text = cipher_text ⊕ key
+3. plain_text ⊕ cipher_text = key</p>
+<p>We don't actually know the length of the key, but we can try to XOR the first 6 bytes (length of <strong>.rtf</strong> magic bytes) of the cipher_text against the magic bytes to get the first 6 bytes of the key:</p>
+<pre><code class="bash">xxd -l 6 text.enc
+00000000: aa59 4264 7f51                           .YBd.Q
+</code></pre>
+
+<p>Then, I used the following tiny python3 script:</p>
+<pre><code class="python3">import binascii 
+cipher_text = b&quot;\xaa\x59\x42\x64\x7f\x51&quot;
+magic_bytes = b&quot;\x7b\x5c\x72\x74\x66\x31&quot;
+result = bytearray()
+for i in range(6):
+    result.append(cipher_text[i] ^ magic_bytes[i])
+print(binascii.hexlify(result))
+</code></pre>
+
+<p>The answer was: b'd10530101960'. 
+Which means that the first 6 bytes of our key are: <strong>D1 05 30 10 19 60</strong>.</p>
+<p>Now, lets try to XOR the ciphertext against the key (key with 6 bytes) and see if we can get an interesting (or potentially all) part of the plain text (as step 2. in math part stated).</p>
+<p>For this I used almost the same python3 script but adapted:</p>
+<pre><code class="python3">import sys
+cipher_text = bytearray(open(sys.argv[1], 'rb').read())
+key = b&quot;\xd1\x05\x30\x10\x19\x60&quot;
+result = bytearray()
+for i in range(len(cipher_text)):
+    result.append(cipher_text[i] ^ key[i%len(key)])
+open(&quot;output.rtf&quot;, 'wb').write(result)
+</code></pre>
+
+<p>If we run this script a file <strong>output.rtf</strong> will appear.
+Luckily this file is the complete <strong>.rtf</strong> file and we can get the flag in plain text from there: </p>
+<pre><code class="bash">cat output.rtf
+
+{\rtf1\ansi\deff3\adeflang1025
+{\fonttbl{\f0\froman\fprq2\fcharset0 Times New Roman;}{\f1\froman\fprq2\fcharset2 Symbol;}{\f2\fswiss\fprq2\fcharset0 Arial;}{\f3\froman\fprq2\fcharset0 Liberation Serif{\*\falt Times New Roman};}{\f4\fswiss\fprq2\fcharset0 Liberation Sans{\*\falt Arial};}{\f5\fnil\fprq2\fcharset0 Noto Sans CJK SC Regular;}{\f6\fnil\fprq2\fcharset0 FreeSans;}{\f7\fswiss\fprq0\fcharset0 FreeSans;}}
+{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;\red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;\red128\green128\blue128;\red192\green192\blue192;}
+{\stylesheet{\s0\snext0\widctlpar\hyphpar0\aspalpha\ltrpar\cf0\kerning1\dbch\af5\langfe2052\dbch\af6\afs24\alang1081\loch\f3\fs24\lang1033 Normal;}
+{\s15\sbasedon0\snext16\sb240\sa120\keepn\dbch\af5\dbch\af6\afs28\loch\f4\fs28 Heading;}
+{\s16\sbasedon0\snext16\sl288\slmult1\sb0\sa140 Text Body;}
+{\s17\sbasedon16\snext17\sl288\slmult1\sb0\sa140\dbch\af7 List;}
+{\s18\sbasedon0\snext18\sb120\sa120\noline\i\dbch\af7\afs24\ai\fs24 Caption;}
+{\s19\sbasedon0\snext19\noline\dbch\af7 Index;}
+}{\*\generator LibreOffice/5.1.6.2$Linux_X86_64 LibreOffice_project/10m0$Build-2}{\info{\creatim\yr2019\mo9\dy10\hr11\min5}{\revtim\yr2019\mo9\dy10\hr11\min6}{\printim\yr0\mo0\dy0\hr0\min0}}\deftab709
+\viewscale100
+{\*\pgdsctbl
+{\pgdsc0\pgdscuse451\pgwsxn12240\pghsxn15840\marglsxn1134\margrsxn1134\margtsxn1134\margbsxn1134\pgdscnxt0 Default Style;}}
+\formshade\paperh15840\paperw12240\margl1134\margr1134\margt1134\margb1134\sectd\sbknone\sectunlocked1\pgndec\pgwsxn12240\pghsxn15840\marglsxn1134\margrsxn1134\margtsxn1134\margbsxn1134\ftnbj\ftnstart1\ftnrstcont\ftnnar\aenddoc\aftnrstcont\aftnstart1\aftnnrlc
+{\*\ftnsep\chftnsep}\pgndec\pard\plain \s0\widctlpar\hyphpar0\aspalpha\ltrpar\cf0\kerning1\dbch\af5\langfe2052\dbch\af6\afs24\alang1081\loch\f3\fs24\lang1033{\rtlch \ltrch\loch
+The flag is: ONA\{b06901c39072abf000563ea92968cbf93b26d4d4\}}
+\par }% 
+</code></pre>
+
+<p>Therefore, the flag was </p>
+<pre><code>ONA{b06901c39072abf000563ea92968cbf93b26d4d4}
+</code></pre>
 
   <br>
-    
-
-    
-    
-      
-      
-    
-
-  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
-    
-    <div class="wm-article-nav pull-right">
-      <a href="../defuse_bomb/" class="btn btn-xs btn-default pull-right">
-        Next
-        <i class="fa fa-chevron-right" aria-hidden="true"></i>
-      </a>
-      <a href="../defuse_bomb/" class="btn btn-xs btn-link">
-        Defuse the bomb
-      </a>
-    </div>
-    
-    <div class="wm-article-nav">
-      <a href="../secret_spy_message/" class="btn btn-xs btn-default pull-left">
-        <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        Previous</a><a href="../secret_spy_message/" class="btn btn-xs btn-link">
-        Secret Spy Message
-      </a>
-    </div>
-    
-  </div>
-
-    <br>
 </div>
 
 <footer class="col-md-12 wm-page-content">

@@ -32,7 +32,11 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "PlaceHolder", url: "#_top", children: [
+          {title: "Guess my number", url: "#_top", children: [
+              {title: "Description", url: "#description" },
+              {title: "Statement", url: "#statement" },
+              {title: "File", url: "#file" },
+              {title: "Solution", url: "#solution" },
           ]},
         ];
 
@@ -83,40 +87,60 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
 
-    <h1 id="placeholder">PlaceHolder</h1>
+    <h1 id="guess-my-number">Guess my number</h1>
+<h2 id="description">Description</h2>
+<p><em> Category: Programming
+</em> Points: 250/ 500 
+* Goal: Fun, coding and a little bit about probabilties. </p>
+<h2 id="statement">Statement</h2>
+<p>Let's play a game :).
+I will pick a number of 5 digits without telling you which one it is. You'll have to guess it in 4 or less attempts. 
+Each attempt you make will have answer. This answer will be two numbers: X Y </p>
+<p>X is the amount of good digits
+Y is the amount of regular digits. </p>
+<p>A good digit means that you have correctly guessed the position of a digit. 
+A regular digit means that a digit of your guess is inside the number that was chosen but is not in the correct place.</p>
+<p>For example: If the number chosen is 91246 and your attempt is 12345, the answer will be: 1 2. Why? 
+1 good because the digit 4 is inside the number and also in the correct place
+2 regulars because the digits 1 and 2 are in the number, but in diffrent positions than the ones attempted.</p>
+<p>Good luck !</p>
+<p>===</p>
+<p>Juguemos un juego :)
+Voy a elegir un número de 5 cifras sin decírte cual es. Vos vas a tener que adivinarlo en 4 o menos intentos. 
+Cada intento tendrá una respuesta. Dicha respuesta estará compuesta por dos números: X Y </p>
+<p>X será la cantidad de dígitos que están bien
+Y será la cantidad de dígitos que están regular</p>
+<p>Por ejemplo: Si el número elegido es 91246 y tu intento es 12345, la respuesta será: 1 2. ¿Por qué?
+1 bien porque el dígito 4 está dentro del número elegido y además en la posición correcta. 
+2 regulares porque los dígitos 1 y 2 están dentro del número pero en posiciones incorrectas.</p>
+<p>Buena suerte!</p>
+<p>nc 198.211.123.92 1337</p>
+<h2 id="file">File</h2>
+<p>This was hosted in a particular server which may not be available for ever. Therefore, here is the actual server-side code.</p>
+<p><a href="../resources/guess_my_number_remotely.py">server side code</a></p>
+<h2 id="solution">Solution</h2>
+<p>I used to play this game when I was younger and I always found it very funny.
+The idea here wasn't to hack anything but rather create a real solver for this game, which shouldn't take too much time. </p>
+<p>The server had some constraints like: 
+<em> The socket has 10 seconds of timeout
+</em> You cannot have more than 10 connections from the same IP
+<em> You have only 4 attempts to guess the number, otherwise the connection is closed.
+</em> Each time a new connection is performed, a new random number of 5 digist is selected.
+<em> Each time an attempt was submitted, the server will perform a 5 seconds sleep. 
+</em> Maximun amount of valid/invalid attempts is 100!</p>
+<p>My idea was to force as much as possible, to develop their own solvers. Trying to bypass all of these constraints. </p>
+<p>There is not much to say in this challenge but some tricks that I thought at the moment of solving it:
+<em> Do to the timeout is 10 seconds if you have to process something that may take to more than that, you can just send an "invalid format" message. Therefore you will not waste a valid attempt one, but you will be "refreshing" the timeout. However, be you should do this carefully because you have also a limitation of 100 attempts either valid or invalid.
+</em> Your solution won't guarantee you to always guess the number in 4 or less attempts. But the probability in answering correctly in less than 100 connections with a naive solver, should be high enough.
+* You can split this in 10 processes (10 different connections at a time) and therefore speed up your chances of winning.</p>
+<p>Here is the <a href="../resources/solver_remotely.py">solver</a> I've developed.</p>
+<p>Finally the flag was: </p>
+<pre><code>ONA{861c4f67e887dec85292d36ab05cd7a1a7275228}
+</code></pre>
+
+<p><img alt="" src="../resources/win.png" /></p>
 
   <br>
-    
-
-    
-    
-      
-      
-    
-
-  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
-    
-    <div class="wm-article-nav pull-right">
-      <a href="../../../../tiny_tools/almost_sudo/" class="btn btn-xs btn-default pull-right">
-        Next
-        <i class="fa fa-chevron-right" aria-hidden="true"></i>
-      </a>
-      <a href="../../../../tiny_tools/almost_sudo/" class="btn btn-xs btn-link">
-        Almost sudo
-      </a>
-    </div>
-    
-    <div class="wm-article-nav">
-      <a href="../defuse_bomb/" class="btn btn-xs btn-default pull-left">
-        <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        Previous</a><a href="../defuse_bomb/" class="btn btn-xs btn-link">
-        Defuse the bomb
-      </a>
-    </div>
-    
-  </div>
-
-    <br>
 </div>
 
 <footer class="col-md-12 wm-page-content">
