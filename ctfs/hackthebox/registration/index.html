@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Initial registration to HTB - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Registration", url: "#_top", children: [
+              {title: "Disclaimer", url: "#disclaimer" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../bashed/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../bashed/" class="btn btn-xs btn-link">
+        Bashed
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../.." class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../.." class="btn btn-xs btn-link">
+        Home
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="registration">Registration</h1>
+<p>In order to join to the platform, you should solve the first challenge.</p>
+<p>Once in the <strong>JOIN</strong> section, open we are asked to prompt a code. We don't have any code yet, so the first step is to look into the page source to find something. After a digging some time, you will find a link to a JS script: <strong>/js/inviteapi.min.js</strong>. After openning and formating it:</p>
+<pre><code class="javascript">
+eval(
+    function  (p,a,c,k,e,d){
+        e = function(c){return c.toString(36)};
+        if ( !''.replace(/^/,String)){
+            while(c--){
+                d[c.toString(a)] = k[c] || c.toString(a)
+            }
+            k = [function(e){return d[e]}];
+            e = function(){return'\\w+'};
+            c = 1
+        };
+        while(c--){
+            if (k[c]){
+                p = p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])
+            }
+        }
+        return p    
+    }
+    ('1 i(4){h 8={&quot;4&quot;:4};$.9({a:&quot;7&quot;,5:&quot;6&quot;,g:8,b:\'/d/e/n\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}1 j(){$.9({a:&quot;7&quot;,5:&quot;6&quot;,b:\'/d/e/k/l/m\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}',
+    24,
+    24,
+    'response|function|log|console|code|dataType|json|POST|formData|ajax|type|url|success|api|invite|error|data|var|verifyInviteCode|makeInviteCode|how|to|generate|verify'.split('|'),
+    0,
+    {}
+    )
+)
+
+</code></pre>
+
+<p>So basically, it's a JS functiont that it's being called with some specific parameters.</p>
+<p>It's not necessary to fully understand the whole thing, we can just use the Chrome/Firefox JS console and make use of this code. Nevertheless, if you copy &amp; paste it, it won't work due to a name for the function is missing. What I did was just to choose some name, copy only the part of the function definition an afterwards call it with the specific parameters:</p>
+<p><img alt="script result" src="../images/script_result.png" /></p>
+<p>The answer gathered is again JS code:</p>
+<pre><code class="javascript">
+function verifyInviteCode(code){
+    var formData = {&quot;code&quot;:code};
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        data:formData,url:'/api/invite/verify',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+function makeInviteCode(){
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        url:'/api/invite/how/to/generate',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+</code></pre>
+
+<p>This time seems to show us how the <strong>InviteCode</strong> related functions are invoked... Time to use <strong>burp</strong>:</p>
+<p>Issuing the following POST we will receive an answer with some information encoded: </p>
+<pre><code>
+POST /api/invite/how/to/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;data&quot;:&quot;SW4gb3JkZXIgdG8gZ2VuZXJhdGUgdGhlIGludml0ZSBjb2RlLCBtYWtlIGEgUE9TVCByZXF1ZXN0IHRvIC9hcGkvaW52aXRlL2dlbmVyYXRl&quot;,&quot;enctype&quot;:&quot;BASE64&quot;},&quot;0&quot;:200}
+
+</code></pre>
+
+<p>After decoding the value inside <strong>data</strong> which is encoded with the encoding mentioned in <strong>enctype</strong>, you'll get the a message saying:
+<strong>In order to generate the invite code, make a POST request to /api/invite/generate</strong></p>
+<p>So, let folow their order:</p>
+<pre><code>
+POST /api/invite/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;code&quot;:&quot;WElLQVktWFlFWk8tTkpaTEotVVNFQVMtWkJBTE4=&quot;,&quot;format&quot;:&quot;encoded&quot;},&quot;0&quot;:200}
+
+</code></pre>
+
+<p>And here it is.. Our <strong>code</strong> is encoded in base64. Once decoded you'll get your code:</p>
+<p><strong>XIKAY-XYEZO-NJZLJ-USEAS-ZBALN</strong> (in my case).</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>I did the challenge again for the write up because I forgot to do it the first time.
+This time, the code worked perfectly once I typed it. But the first time I did the challenge I remember that I wasn't able to use the code retrieved, and some error saying something about "This IP can't use the code" was triggered. I solved it just connecting through a VPN.</p>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../bashed/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../bashed/" class="btn btn-xs btn-link">
+        Bashed
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../.." class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../.." class="btn btn-xs btn-link">
+        Home
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

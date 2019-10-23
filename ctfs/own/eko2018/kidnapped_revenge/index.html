@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Kidnapped the Revenge - lmkalg's blog</title>
+    <link href="../../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Kidnapped", url: "#_top", children: [
+              {title: "Enunciado", url: "#enunciado" },
+              {title: "File", url: "#file" },
+              {title: "Parte 1: Desencriptando files", url: "#parte-1-desencriptando-files" },
+              {title: "Parte 2: Jugar, a veces es m\u00e1s facil", url: "#parte-2-jugar-a-veces-es-mas-facil" },
+              {title: "Parte 3: Programaci\u00f3n en assembler", url: "#parte-3-programacion-en-assembler" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../../js/base.js"></script>
+      <script src="../../../../search/require.js"></script>
+      <script src="../../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../eko2019/secret_spy_message/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../eko2019/secret_spy_message/" class="btn btn-xs btn-link">
+        Secret Spy Message
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../eko2017/kidnapped/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../eko2017/kidnapped/" class="btn btn-xs btn-link">
+        Kidnapped
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="kidnapped">Kidnapped</h1>
+<ul>
+<li>Category: Miscellaneous</li>
+<li>Points: 500/500</li>
+</ul>
+<h2 id="enunciado">Enunciado</h2>
+<p>Parece un chiste.. 
+El año pasado me hicieron lo mismo. Me queda tiempo hasta el 28 de septiembre para entregar un trabajo de la misma materia (que recursé ya que nadie pudo ayudarme el año pasado) "Programación en assembler". Ya estoy empezando a sospechar que alguno de ustedes me quiere hacer pasar muchos malos momentos. </p>
+<p>En fin.. me pasó algo muy parecido al año pasado. Había terminado con el trabajo, estaba por hacer un backup, cuando de repente.. mi pc se volvió loca. Aparecieron archivos, archivos mios se borraron, ahora hay archivos con extensiones ".enc" ... no entiendo nada. </p>
+<p>Por favor, dame una mano con esto. Necesito de una vez por todas terminar esta materia. El que me hizo esto, me dejó una nota.. Capaz eso les ayuda? 
+Les dejo un pedazo (fijense que pesa solo 15 MB, osea no trabajen sobre esa imagen porque se van a quedar sin lugar) de mi disco. Espero que les sirva de algo. 
+Gracias</p>
+<h2 id="file">File</h2>
+<p><a href="../resources/file.img">disk img</a></p>
+<h2 id="parte-1-desencriptando-files">Parte 1: Desencriptando files</h2>
+<p>El challenge simplemente provee una imagen de un disco. 
+Por lo tanto, montemos esta imagen: </p>
+<pre><code class="bash">sudo mount -o rw file.img /mnt/challenge
+</code></pre>
+
+<p>Ejecutemos un <strong>ls -R</strong> para ver que files interesantes tenemos:</p>
+<p><img alt="ls menos r" src="../resources/ls_menor_r.png" /></p>
+<p>Parece ser un home directory de alguna distribución de Linux. Además, de las carpetas por defecto, parece ser que sólo 3 files son interesantes:</p>
+<ul>
+<li><strong>play_for_the_key.enc</strong></li>
+<li><strong>tarea_secuestrada.asm.zip.enc</strong></li>
+<li><strong>nota</strong></li>
+</ul>
+<p>La nota, dice:</p>
+<pre><code>No es fácil terminar esta materia... te habrás dado cuenta.. pensaste que como ya te había pasado el año pasado este año no te iba a volver a pasar? jaj, pobre.
+
+Consejo de amigos... aprendé un poco más a proteger tu pc... 
+
+El año pasado te ayudé bastante.. este año.. estas solito.. solo un consejo te voy a dar si queres volver a obtener tu tarea: 
+
+                        &quot;Hay veces, que romper es mucho más dificil que aprender a jugar&quot;.
+
+Espero que sepas darte cuenta cuando haya que aplicar este principio.
+
+Mucha suerte..
+Ah, casi me olvidaba, te volví a modificar un poco tu tarea asique.. vas a tener que arreglarla otra vez.. 
+Saludos
+</code></pre>
+
+<p>Lo único interesante acá parece ser la frase: <strong>"Hay veces, que romper es mucho más dificil que aprender a jugar"</strong>.</p>
+<p>Igulamente por ahora, no parece ser útil. </p>
+<p>Usando el comando <strong>ls</strong>, no vamos a listar los archivos ocultos. Si usamos el flag <strong>"-a"</strong>  vamos a encontrar en el home, un file bastante interesante, el <strong>bash_history</strong> con el siguiente contenido:</p>
+<pre><code>whoami
+cd Desktop/
+ls
+cat /etc/passwd
+sudo su - 
+cd /home/
+su - eldiegomaradona
+su - elcharliedelapeople
+crontab -e 
+cd /home/alumno/
+cd facu/
+cd programacion_assembler/
+cd tarea_final/
+vim play_for_key.c
+movcc play_for_key -o play_for_key
+vim simd.asm
+zip -er tarea_secuestrada.asm.zip simd.asm
+rm -rf simd.asm play_for_key.c
+openssl enc -aes-256-cbc -in tarea_secuestrada.asm.zip -out tarea_secuestrada.asm.zip.enc
+openssl enc -aes-256-cbc -in play_for_key -out play_for_key.enc
+rm -rf play_for_key
+rm -rf tarea_secuestrada.asm.zip
+vim nota
+cd ~
+rm .bash*
+logout
+</code></pre>
+
+<p>Por lo que vemos, el atacante:</p>
+<ol>
+<li>Trató de loguearse con algunos usuarios.</li>
+<li>Abrió el file de configuración de los crons, habrá modificado algo? (no tenemos nada para confirmarlo).</li>
+<li>Creó/editó un file llamado play_for_key.c (<strong>vim play_for_the_key.c</strong>).</li>
+<li>Lo compilo? Con algo raro? (<strong>movcc play_for_key -o play_for_key</strong>).</li>
+<li>Creó/editó un file llamado simd.asm, será la tarea? (<strong>vim simd.asm</strong>) .</li>
+<li>Zipea el file con password, y acá podemos confirmar que es la tarea (<strong>zip -er tarea_secuestrada.asm.zip simd.asm</strong>).</li>
+<li>Elimina los files con código fuente (<strong>rm -rf simd.asm play_for_key.c</strong>).</li>
+<li>Encripta ambos files, sin proporcionar password! (<strong>ambas lineas de openssl</strong>)</li>
+<li>Elimina dicho files, es decir, sólo deja los encriptados (<strong>ambas lineas de rm</strong>)</li>
+<li>Elimina todo los files que comiencen con .bash (<strong>rm .bash</strong>)</li>
+</ol>
+<p>Si tratamos de desencriptar los files de extensión .enc, no vamos a poder ya que nos pide una password. Dado que en los comandos para encriptar los files no se utilizó el flag <strong>"-k"</strong>, para especificar la password en el comando propiamente, entonces podemos asumir que la password fue ingresada en modo interactivo, y por lo tanto no va a haber registro de ella.</p>
+<p>Una de las posibilidades acá seria tratar de bruteforcear la password... Pero en general, al menos desde mi punto de vista, yo haría esto cuando se me acaban las opciones. </p>
+<p>En este caso, podemos ver que se borraron varios archivos. Por lo tanto, podríamos usar alguna suite de forensia con el objetivo de recuperar los files eliminados, como por ejemplo, <strong>photorec</strong>. </p>
+<p>Con photorec, se puede recuperar al menos un archivo. Ese archivo, parece ser el <strong>.bashrc</strong> del usuario, y entre sus líneas, tiene lo siguiente:</p>
+<pre><code class="bash"># enable some nice features
+openssl(){
+    ba=$4
+    /usr/bin/openssl $1 $2 $3 $4 $5 $6 -k $(for i in {1..100}; do echo -n ${#ba}; done)
+}
+</code></pre>
+
+<p>Esto quiere decir que, basicamente, el atacante creó un alias con el mismo nombre que el comando <strong>openssl</strong>, redefiniendo su acción. En resumen, lo que esta haciendo eso, es agregar la password de encripción con el flag <strong>"-k"</strong> cada vez que se llama al comando <strong>openssl</strong>. Dicha password es la longitud del nombre del file pasado por parámetro, repetido 100 veces. La longitud del string <strong>play_for_the_key</strong> es 16 y de <strong>tarea_secuestrada.asm.zip</strong> es 25. Por lo tanto, los siguientes comandos, vamos a poder desencriptar ambos files:</p>
+<pre><code class="bash">/usr/bin/openssl enc -d -aes-256-cbc -in tarea_secuestrada.asm.zip.enc -out tarea_secuestrada.asm.zip -k 25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525
+
+/usr/bin/openssl enc -d -aes-256-cbc -in play_for_the_key.enc -out play_for_the_key -k 16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616
+</code></pre>
+
+<p><em>Tener que la salida de estos comandos debería ser almacenada afuera del disco, ya que sólo tiene 15 MB</em></p>
+<h2 id="parte-2-jugar-a-veces-es-mas-facil">Parte 2: Jugar, a veces es más facil</h2>
+<p>En este momento tenemos 2 files imporatantes:
+<em> <strong>play_for_the_key</strong>: Un binario de 32 bits. Que cuando lo ejecutamos parece que nos pide respuestas a unas "preguntas". 
+</em> <strong>tarea_secuestrada.zip</strong>: Un archivo ZIP con password. </p>
+<p>En este momento uno podría tratar de bruteforcear la password del ZIP quizás usando JTR o Hashcat o cualquier otra tool para crackear password de un ZIP. Pero, dado que existe un binario con un nombre bastante claro, se puede intuir que el camino al menos lógico, sería tratar de conseguir la key usando dicho binario. </p>
+<h3 id="play-for-the-key">Play for the key</h3>
+<p>Cuando ejecutamos el binario, el siguiente mensaje aparece:</p>
+<pre><code>Ingresa la respuesta número 1:
+</code></pre>
+
+<p>A esta altura no tenemos ni idea que significa esto. Si empezamos a probar y fallamos, el mensaje <strong>"Nop!"</strong> se imprimirá en la pantalla. En cambio, si ponemos la respuesta correcta, nos pedirá la respuesta a la siguiente pregunta:</p>
+<p><img alt="play for the key" src="../resources/play_for_the_key.png" /></p>
+<p>Pero ¿Cómo sabemos cuantas pregunta son? ¿Cuál es la repuesta correcta? </p>
+<p>Una opción válida en este momento sería tratar de reversear el binario y ver qué está haciendo. Para este ejemplo, voy a usar <a href="https://binary.ninja/">Binary Ninja</a>. Sin embargo, cuando vamos a ver el graph view del binario, vemos algo bastante extraño.. Solo existe un basic block. Si seguimos mirando, vamos a notar que sólo hay instrucciones <strong>MOV</strong>:</p>
+<p><img alt="binary ninja picture" src="../resources/binary_ninja.png" /></p>
+<p>¿Qué está pasando?. Si volvemos atrás un poco y revisamos otra vez el <strong>bash_history</strong> vamos a darnos cuenta que este binario fue compilado usando un comando llamado <strong>movcc</strong>. El primer resultado de la búsqueda de dicho comando en Google, nos lleva a un github de una tool llamada <strong>movfuscator</strong>. Según su documentación, esta compila un código fuente en un binario de sólo instrucciones <strong>MOV</strong>. Si bien desde un punto de performance y hasta de espacio que ocupa dicho binario, es bastante malo, al estar escrito sólo con instrucciones <strong>MOV</strong> el reversing de este binario se vuelve muchisimo más tedioso. </p>
+<p>Y aquí se abren dos caminos:
+1. Encontramos una tool para de-movfuscar el binario.
+2. Hacemos uso del msj de la nota, y JUGAMOS en vez de tratar de romper el juego. </p>
+<p>Vamos a ir por la opción 2: </p>
+<p>Luego de probar un poco con algunos valores que ingresamos como respuestas, vamos a notar que:
+1. Para 1, la respuesta es 1.
+2. Para 2, la respuesta es 2. 
+3. Para 3, la respuesta es 1. 
+4. Para 4, la respuesta es 1.
+5. Para 5, la respuesta es 2.
+6. Para 6, la respuesta es 1. 
+7. Para 7, la respuesta es 2.
+8. Para 8, la respuesta es 1. 
+9. Para 9, la respuesta es 2.
+10. Para 10, la respuesta es 3. 
+11. Para 11, la respuesta es 4.
+12. Para 12, la respuesta es 1.</p>
+<p>Si observamos con detalle, podemos ver que el la respuesta es un numero que empieza a aumentar pero en ciertos valores vuelve a uno. Dichos valores son: 2, 3, 5, 7, 11, etc.</p>
+<p>Es decir, parece ser un contador que cuando el número de la pregunta es uno de esos, el contador se resetea y vuelve a empezar de 1.</p>
+<p>Pero ¿Qué tienen de común estos números? <strong>SON PRIMOS!!</strong></p>
+<p>Todavía no sabemos qué cantidad de preguntas hay, pero igualmente, podemos hacer un script que imprima un contador y que cada vez que se cruza con un número primo, vuelva a 1. Dado que no sabemos la cantidad, podemos ir probando hasta que la encontremos. Yo arranqué con 15, y faltaban mas. Mi siguiente paso fue probar con 1000, y funcionó. La cantidad de preguntas finalmente eran 100. </p>
+<h4 id="solucionador">Solucionador</h4>
+<pre><code class="python">primos = []
+contador = 1
+numero_de_pregunta = 1
+posible_numero_de_preguntas = 1000
+for numero_de_pregunta in xrange(1,posible_numero_de_preguntas):
+        print contador
+        if any((numero_de_pregunta % primo) == 0 for primo in primos) or numero_de_pregunta == 1:
+                contador += 1
+        else:
+                contador = 1
+                primos.append(numero_de_pregunta)
+</code></pre>
+
+<h4 id="intento-con-15-primos">Intento con 15 primos</h4>
+<p><img alt="solucionador 15" src="../resources/solucionador_15_pregs.png" /></p>
+<h4 id="intento-con-1000-primos">Intento con 1000 primos</h4>
+<p><img alt="solucionador 15" src="../resources/zip_password.png" /></p>
+<p>Si intentamos descomprimir el ZIP con esa clave, vamos a obtener un último file <strong>simd.asm</strong>, que es la última parte del challenge. </p>
+<h2 id="parte-3-programacion-en-assembler">Parte 3: Programación en assembler</h2>
+<p>La última parte del challenge implica tratar de entender qué hizo el atacante (qué modificó) para poder volver hacer que funcione otra vez. </p>
+<p>El file original contiene:</p>
+<pre><code class="nasm"> nasm -f elf64 simd.asm; ld -o simd simd.o
+section     .text
+global      _start                              
+
+_start:                                         
+
+    movdqu  xmm1, [Parallel_processing]
+    movdqu  xmm3, [is_much_faster...You_know?]
+    movdqu  xmm5, [but_sometimes_is_difficult]
+    movdqu  xmm7, [to_understand_how_it_works.]
+    movdqu  xmm10, [Anyways_I_trust_you...]
+
+    movdqu  xmm2, xmm1
+    movdqu  xmm4, xmm3
+    movdqu  xmm6, xmm5
+    movdqu  xmm8, xmm7
+    movdqu  xmm11, xmm10
+
+    pxor xmm9, xmm9
+
+    punpckhwd xmm1, xmm9   
+    punpckhwd xmm2, xmm9   
+    punpcklwd xmm3, xmm9   
+    punpckhwd xmm4, xmm9   
+    punpcklwd xmm5, xmm9   
+    punpcklwd xmm6, xmm9   
+    punpcklwd xmm7, xmm9   
+    punpckhwd xmm8, xmm9
+    punpcklwd xmm10, xmm9
+    punpckhwd xmm9 ,xmm11
+
+
+    psubw xmm1, xmm10
+    psubw xmm2, xmm11
+    psubw xmm3, xmm10
+    psubw xmm4, xmm11
+    psubw xmm5, xmm10
+    psubw xmm6, xmm11
+    psubw xmm7, xmm10
+    psubw xmm8, xmm11
+
+    packuswb xmm1, xmm2 
+    packuswb xmm3, xmm4 
+    packuswb xmm5, xmm6 
+    packuswb xmm7, xmm8 
+
+
+    movdqu [Parallel_processing], xmm1
+    movdqu [is_much_faster...You_know?], xmm3
+    movdqu [but_sometimes_is_difficult], xmm5
+    movdqu [to_understand_how_it_works.], xmm7
+
+    mov     ecx, Parallel_processing  
+    mov     edx, 0x40
+    mov     ebx,1                               
+    mov     eax,4                               
+    int     0x80                                
+
+    mov     eax,1                               
+    int     0x80                                
+
+
+section     .data
+Parallel_processing dq 0x7e7618131b332312, 0xb5db2d5e4333690e
+is_much_faster...You_know? dq 0x487bdfe02d301eee, 0x9db0232038f9321e
+but_sometimes_is_difficult dq 0x4a47dbdf5e07f2f5, 0x6caaef1f3ef1312f
+to_understand_how_it_works. dq 0x5078dd0e61071ff0, 0x5a9adf0f28e0206b
+Anyways_I_trust_you... dq 0x1715ABADFACEBABE
+Whats_wrong_in_this_code? dq 0x3A7ABEEF08C0FFEE 
+</code></pre>
+
+<p>Lo más imporante acá es entender qué está haciendo este código, al menos una idea a alto nivel para después ahondar en cada detalle. 
+Dividamos el código en partes:</p>
+<h4 id="analisis-de-codigo-parte-1">Análisis de código - Parte 1</h4>
+<pre><code class="nasm">
+    movdqu  xmm1, [Parallel_processing]
+    movdqu  xmm3, [is_much_faster...You_know?]
+    movdqu  xmm5, [but_sometimes_is_difficult]
+    movdqu  xmm7, [to_understand_how_it_works.]
+    movdqu  xmm10, [Anyways_I_trust_you...]
+
+    movdqu  xmm2, xmm1
+    movdqu  xmm4, xmm3
+    movdqu  xmm6, xmm5
+    movdqu  xmm8, xmm7
+    movdqu  xmm11, xmm10
+
+    pxor xmm9, xmm9
+</code></pre>
+
+<p>En esta parte, simplemente está copiando el contenido de las etiquetas a los registros XMM (16 bytes). Luego, hace una de cada una de ellos, dejando el mismo contenido de a pares. Es decir, <em>xmm1</em> tiene el mismo valor que <em>xmm2</em>, <em>xmm3</em> el mismo que <em>xmm4</em>, etc.. Por último, <em>xmm9</em> lo pone en 0. </p>
+<h4 id="analisis-de-codigo-parte-2">Análisis de código - Parte 2</h4>
+<pre><code class="nasm">punpckhwd xmm1, xmm9   
+punpckhwd xmm2, xmm9   
+punpcklwd xmm3, xmm9   
+punpckhwd xmm4, xmm9   
+punpcklwd xmm5, xmm9   
+punpcklwd xmm6, xmm9   
+punpcklwd xmm7, xmm9   
+punpckhwd xmm8, xmm9
+punpcklwd xmm10, xmm9
+punpckhwd xmm9 ,xmm11
+</code></pre>
+
+<p>En esta segunda parte, se puede observar dos instrucciones distintas:
+<em> <strong>punpckhwd</strong>
+</em> <strong>punpcklwd</strong></p>
+<p>Éstas, son parte de un conjunto de instrucciones (SSE) usados para procesamiento paralelo. 
+Googleando un poco, se puede encontrar que la función <em>punpckhwd</em> divide los registros, tanto fuente como destino, en words (2 bytes) (por eso la ante última letra, <em>w</em>). Toma las words que están en la parte high (por eso la letra <em>h</em> antes de la <em>w</em>) de ambos registros, y los intercala. </p>
+<p>Lo imporante de esta parte, no es tanto entrar en detalle de cómo es que se intercalan estrictamente, sino más que nada entender que: </p>
+<ul>
+<li>Se está unpackeando words</li>
+<li>Se está unpackeando o bien la parte high, o bien la parte low.</li>
+<li><strong>Casi</strong> todas ellas se están unpackeando con 0 (<strong>xmm9</strong> es 0).</li>
+</ul>
+<p>Si recordamos lo que se hizo en la primera parte, había pares de registros <strong>xmm</strong> que tenian el mismo valor. Si bien vemos casos en la parte 2, donde se está unpackeando la parte high y low de un mismo valor de registros (por ejemplo, para <strong>xmm3</strong> y <strong>xmm4</strong>), también vemos casos donde se hace dos veces la parte high (<strong>xmm1</strong> y <strong>xmm2</strong>). Raro..</p>
+<p>Además, vemos que la última intrucción, parece unpackear al revés, es decir, usando el <strong>xmm9</strong> como registro fuente y no como destino. Otra cosa para anotar.</p>
+<h4 id="analisis-de-codigo-parte-3">Análisis de código - Parte 3</h4>
+<pre><code class="nasm">psubw xmm1, xmm10
+psubw xmm2, xmm11
+psubw xmm3, xmm10
+psubw xmm4, xmm11
+psubw xmm5, xmm10
+psubw xmm6, xmm11
+psubw xmm7, xmm10
+psubw xmm8, xmm11
+</code></pre>
+
+<p>Otra instrucción del mismo set de procesamiento paralelo. En este caso esta instrucción hace una resta word a word de cada registro y almacena el resultado en el registro destino. </p>
+<p>Obsevado este pedazo de código, se puede intuir que ni <strong>xmm11</strong> ni <strong>xmm10</strong> son usados dos veces con el mismo par de registros. Es decir, todo par de registros usa una vez <strong>xmm10</strong> y una vez <strong>xmm11</strong>. 
+De hecho, por el orden y lo números de regitros, podríamos llegar a pensar que <strong>xmm10</strong> es siempre usado para la parte <strong>low</strong> de los pares de registros y <strong>xmm11</strong> para la parte <strong>high</strong>.</p>
+<h4 id="analisis-de-codigo-parte-4">Análisis de código - Parte 4</h4>
+<pre><code class="nasm">packuswb xmm1, xmm2 
+packuswb xmm3, xmm4 
+packuswb xmm5, xmm6 
+packuswb xmm7, xmm8 
+</code></pre>
+
+<p>Por último, en esta parte, se hace el packeo otra vez para volver a la "normalidad". Cada par de registros, se packean juntos. 
+Sin embargo, dicho packeo, se hace de word a byte (por eso <strong>wb</strong> a lo último) cuando el unpackeo se hizo de word a double word... raro.. </p>
+<h4 id="analisis-de-codigo-parte-5">Análisis de código - Parte 5</h4>
+<pre><code class="nasm">movdqu [Parallel_processing], xmm1
+movdqu [is_much_faster...You_know?], xmm3
+movdqu [but_sometimes_is_difficult], xmm5
+movdqu [to_understand_how_it_works.], xmm7
+</code></pre>
+
+<p>Se escribe dichas posiciones de memoria el valor que tienen algunos (los representantes de cada par?) de los <strong>xmm</strong> después de hacer las operaciones. </p>
+<h4 id="analisis-de-codigo-parte-6">Análisis de código - Parte 6</h4>
+<pre><code class="nasm">mov     ecx, Parallel_processing  
+mov     edx, 0x40
+mov     ebx,1                               
+mov     eax,4                               
+int     0x80                                
+
+mov     eax,1                               
+int     0x80                                
+</code></pre>
+
+<p>Finalmente, imprime por pantalla los 64 bytes que tenga la posición de memoria apuntada por la etiqueta <strong>Parallel_processing</strong>. </p>
+<h4 id="analisis-de-codigo-resumen">Análisis de código - Resumen</h4>
+<p>Hay al menos 3 cosas que parecen raras: </p>
+<ol>
+<li>En el momemto de unpackear, hay algunos pares de registros que se unpackea la misma parte (high o low). </li>
+<li>En una instrucción de unpackeo, se usa el <strong>xmm9</strong> como registro destino (no consistente con todo lo anterior).</li>
+<li>En el momento de packear, si bien se había unpackeado de word a double word, se packea de word a byte.</li>
+</ol>
+<p>Al ser un ejercicio de "patching", no queda otra que ir probando los cambios a ver como afectan. Igualmente, así como fuimos intuyendo a lo largo del texto, podríamos hacer los cambios para lógicos:</p>
+<ol>
+<li>Cada par deberia unpackear la parte low y la parte high. Cómo saber cual debería, podríamos probar. Sin embargo, por cómo está escrito el código, vamos a optar por unpackear la parte low con el registro de numero más bajo entre los pares (es decir, entre <strong>xmm1</strong> y <strong>xmm2</strong>, usaremos <strong>xmm1</strong>) y el de número más alto para la parte high:</li>
+</ol>
+<pre><code class="nasm">punpcklwd xmm1, xmm9   
+punpckhwd xmm2, xmm9   
+punpcklwd xmm3, xmm9   
+punpckhwd xmm4, xmm9   
+punpcklwd xmm5, xmm9   
+punpckhwd xmm6, xmm9   
+punpcklwd xmm7, xmm9   
+punpckhwd xmm8, xmm9
+punpcklwd xmm10, xmm9
+punpckhwd xmm11, xmm9
+</code></pre>
+
+<ol>
+<li><strong>xmm9</strong> no tiene mucho sentido ponerlo adelante, además de que parece inconsistente con todas las otras, por lo tanto, cambiemos el orden. y dejemos que la instrucción sea: </li>
+</ol>
+<pre><code class="nasm">punpckhwd xmm11, xmm9
+</code></pre>
+
+<ol>
+<li>Probemos. Packemos de double word a word, usando la instrucción <strong>packusdw</strong>:</li>
+</ol>
+<pre><code class="nasm">packusdw xmm1, xmm2 
+packusdw xmm3, xmm4 
+packusdw xmm5, xmm6 
+packusdw xmm7, xmm8 
+</code></pre>
+
+<p>Es decir, que finalmente, el nuevo código sería: </p>
+<pre><code class="nasm">; nasm -f elf64 simd.asm; ld -o simd simd.o
+section     .text
+global      _start                              
+
+_start:                                         
+
+    movdqu  xmm1, [Parallel_processing]
+    movdqu  xmm3, [is_much_faster...You_know?]
+    movdqu  xmm5, [but_sometimes_is_difficult]
+    movdqu  xmm7, [to_understand_how_it_works.]
+
+
+    movdqu  xmm10, [Anyways_I_trust_you...]
+
+    movdqu  xmm2, xmm1
+    movdqu  xmm4, xmm3
+    movdqu  xmm6, xmm5
+    movdqu  xmm8, xmm7
+    movdqu  xmm11, xmm10
+
+    pxor xmm9, xmm9
+
+    punpcklwd xmm1, xmm9   
+    punpckhwd xmm2, xmm9   
+    punpcklwd xmm3, xmm9   
+    punpckhwd xmm4, xmm9   
+    punpcklwd xmm5, xmm9   
+    punpckhwd xmm6, xmm9   
+    punpcklwd xmm7, xmm9   
+    punpckhwd xmm8, xmm9
+    punpcklwd xmm10, xmm9
+    punpckhwd xmm11, xmm9
+
+
+    psubw xmm1, xmm10
+    psubw xmm2, xmm11
+    psubw xmm3, xmm10
+    psubw xmm4, xmm11
+    psubw xmm5, xmm10
+    psubw xmm6, xmm11
+    psubw xmm7, xmm10
+    psubw xmm8, xmm11
+
+    packusdw xmm1, xmm2 
+    packusdw xmm3, xmm4 
+    packusdw xmm5, xmm6 
+    packusdw xmm7, xmm8 
+
+
+    movdqu [Parallel_processing], xmm1
+    movdqu [is_much_faster...You_know?], xmm3
+    movdqu [but_sometimes_is_difficult], xmm5
+    movdqu [to_understand_how_it_works.], xmm7
+
+    mov     ecx, Parallel_processing  
+    mov     edx, 0x40
+    mov     ebx,1                               
+    mov     eax,4                               
+    int     0x80                                
+
+    mov     eax,1                               
+    int     0x80                                
+
+
+section     .data
+Parallel_processing dq 0x7e7618131b332312, 0xb5db2d5e4333690e
+is_much_faster...You_know? dq 0x487bdfe02d301eee, 0x9db0232038f9321e
+but_sometimes_is_difficult dq 0x4a47dbdf5e07f2f5, 0x6caaef1f3ef1312f
+to_understand_how_it_works. dq 0x5078dd0e61071ff0, 0x5a9adf0f28e0206b
+Anyways_I_trust_you... dq 0x1715ABADFACEBABE
+Whats_wrong_in_this_code? dq 0x3A7ABEEF08C0FFEE 
+</code></pre>
+
+<p>Si compilamos este programa y lo corremos, obtendremos el flag:</p>
+<pre><code>The flag is:ona{0db234f102901d6c789c2023A11600022e9fa1c9}
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../eko2019/secret_spy_message/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../eko2019/secret_spy_message/" class="btn btn-xs btn-link">
+        Secret Spy Message
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../eko2017/kidnapped/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../eko2017/kidnapped/" class="btn btn-xs btn-link">
+        Kidnapped
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

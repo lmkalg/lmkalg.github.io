@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Bashed - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Bashed", url: "#_top", children: [
+              {title: "User", url: "#user" },
+              {title: "Root", url: "#root" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../valentine/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../valentine/" class="btn btn-xs btn-link">
+        Valentine
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../registration/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../registration/" class="btn btn-xs btn-link">
+        Initial registration to HTB
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="bashed">Bashed</h1>
+<h2 id="user">User</h2>
+<p>This machine was pretty easy.
+First of all I used <strong>dirb</strong> to start listing some common directories.</p>
+<pre><code class="bash">
+dirb http://10.10.10.68 common.txt
+
+</code></pre>
+
+<p>Some directories were found:</p>
+<p><img alt="dirb directories" src="../images/bashed/dirb.png" /></p>
+<p>The <strong>dev</strong> seemed to be the most interesting one, therefore I started from there:</p>
+<p><img alt="dev index" src="../images/bashed/dev_index.png" /></p>
+<p>And once inside <strong>phpbash.php</strong>:</p>
+<p><img alt="dev index" src="../images/bashed/user_hash.png" /></p>
+<h2 id="root">Root</h2>
+<p><strong>TBD</strong></p>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../valentine/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../valentine/" class="btn btn-xs btn-link">
+        Valentine
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../registration/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../registration/" class="btn btn-xs btn-link">
+        Initial registration to HTB
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

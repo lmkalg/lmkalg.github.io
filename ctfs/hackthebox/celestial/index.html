@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Celestial - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Celestial", url: "#_top", children: [
+              {title: "User", url: "#user" },
+              {title: "Root", url: "#root" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../canape/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../canape/" class="btn btn-xs btn-link">
+        Canape (favourite)
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../poison/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../poison/" class="btn btn-xs btn-link">
+        Poison
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="celestial">Celestial</h1>
+<h2 id="user">User</h2>
+<p>After the nmap output we see that there is an open port running express js: 
+<img alt="nmap" src="../images/nmap.png" /></p>
+<p>Next step was to run <strong>dirb</strong> against it, while I went to see this page using a web browser.</p>
+<p>Once we enter with the browser, a <strong>CUSTOM</strong> page saying 404 appears.. But if you go to analyze the HTTP response, you'll see that it isn't a real 404.. In fact, doing a deeper analysis, we will see that the <strong>set-cookie</strong> is present, and the payload seems to be base64. </p>
+<p><img alt="set cookie" src="../images/celestial/set_cookie.png" /></p>
+<p>If we refresh the page we will see this output:</p>
+<p><img alt="hey dummy" src="../images/celestial/hey_dummy.png" /></p>
+<p>And if we decode the cookie, we'll have:</p>
+<pre><code class="json">{&quot;username&quot;:&quot;Dummy&quot;,&quot;country&quot;:&quot;Idk Probably Somewhere Dumb&quot;,&quot;city&quot;:&quot;Lametown&quot;,&quot;num&quot;:&quot;2&quot;}
+</code></pre>
+
+<p>So my first attempt was trying to change the username for admin, or something like that but nothing happened. Then I realize that the message in the index page was saying <strong>Dummy</strong> and <strong>2</strong>.  So I changed the <strong>num</strong> for an "a" and the following I received the following response:</p>
+<p><img alt="eval" src="../images/celestial/eval.png" /></p>
+<p>This was great. If you pay attention to the response, you'll see that the error cames from an <strong>eval</strong> function. So basically this means that they we can execute arbitrary JS code?.. Let's see..:</p>
+<p><img alt="payload_test" src="../images/celestial/payload_test.png" /></p>
+<p>After a couple of tests I realize that the server was doing something like:</p>
+<pre><code class="javascript">...
+eval(&quot;num + num&quot;);
+...
+</code></pre>
+
+<p>That's why I appended "//" to the final of the payload in order to comment the rest of the line.</p>
+<p>So, basically this means that we are able to execute arbitrary JS code. Next step, was look in the internet for a reverse shell. I found it (its in my documentation), adapt it and used it.</p>
+<p><img alt="reverse shell" src="../images/celestial/reverse_shell.png" /></p>
+<p>Once I got the reverse shell and upgraded to TTY, I finally get the user.txt from the <strong>Documents</strong> directory.</p>
+<h2 id="root">Root</h2>
+<p>This part was very straightforward... 
+Once I get the user shell, I start seeing the files that were in the <strong>/home/user</strong> directory and there was a strange file called <strong>output.txt</strong> which was own by root, but readeable for everyone. This file just contained the message " Script is running ".</p>
+<p>Afterwards, I found a python script in the <strong>Documents</strong> directory of the user, that just had the following line </p>
+<pre><code class="python">print &quot;Script is running...&quot;
+</code></pre>
+
+<p>The <strong>output.txt</strong> was being written each 5 minutes. So quickly I understood that this script was being executed by the <strong>root</strong> user and the output was written to this <strong>txt</strong> file. </p>
+<p>So, why I did was to edit the script and add the following lines:</p>
+<pre><code class="python">content = open(&quot;/root/root.txt&quot;,&quot;r&quot;).read()
+print content
+</code></pre>
+
+<p>After 5 minutes (or less) the output was written again, and the content was the flag: </p>
+<p><img alt="root" src="../images/celestial/root.png" />    </p>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../canape/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../canape/" class="btn btn-xs btn-link">
+        Canape (favourite)
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../poison/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../poison/" class="btn btn-xs btn-link">
+        Poison
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

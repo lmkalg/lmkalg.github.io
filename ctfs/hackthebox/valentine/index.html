@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Valentine - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Valentine (User &amp; root)", url: "#_top", children: [
+              {title: "User", url: "#user" },
+              {title: "Root", url: "#root" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../poison/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../poison/" class="btn btn-xs btn-link">
+        Poison
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../bashed/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../bashed/" class="btn btn-xs btn-link">
+        Bashed
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="valentine-user-root">Valentine (User &amp; root)</h1>
+<h2 id="user">User</h2>
+<p>So, in order to start, as always, I used <strong>nmap</strong>:</p>
+<p><img alt="nmap" src="../images/valentine/nmap.png" /></p>
+<p><strong>SSH</strong>, <strong>HTTP</strong>, <strong>HTTPS</strong>. Let's navigate the web servers while we wait for <strong>dirb</strong> again.</p>
+<p>The index of both webservers is an image of a woman like shouting and the logo of <strong>heartbleed</strong>:</p>
+<p><img alt="index page" src="../images/valentine/webserver_index_image.png" /></p>
+<p>From last machine I learn that inside <strong>/dev/</strong> something could appear. Let's try...:</p>
+<p><img alt="index_dev" src="../images/valentine/index_dev.png" /></p>
+<p>Well, that was lucky. Inside the <strong>notes.txt</strong> there isn't anything interesting, but inside <strong>hype_key</strong>, there is some <strong>encoded</strong> text. Seems to be printable hex, so let's try to decode it: <a href="https://www.rapidtables.com/convert/number/hex-to-ascii.html">hex to ascii</a></p>
+<pre><code>-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,AEB88C140F69BF2074788DE24AE48D46
+
+DbPrO78kegNuk1DAqlAN5jbjXv0PPsog3jdbMFS8iE9p3UOL0lF0xf7PzmrkDa8R
+5y/b46+9nEpCMfTPhNuJRcW2U2gJcOFH+9RJDBC5UJMUS1/gjB/7/My00Mwx+aI6
+0EI0SbOYUAV1W4EV7m96QsZjrwJvnjVafm6VsKaTPBHpugcASvMqz76W6abRZeXi
+Ebw66hjFmAu4AzqcM/kigNRFPYuNiXrXs1w/deLCqCJ+Ea1T8zlas6fcmhM8A+8P
+OXBKNe6l17hKaT6wFnp5eXOaUIHvHnvO6ScHVWRrZ70fcpcpimL1w13Tgdd2AiGd
+pHLJpYUII5PuO6x+LS8n1r/GWMqSOEimNRD1j/59/4u3ROrTCKeo9DsTRqs2k1SH
+QdWwFwaXbYyT1uxAMSl5Hq9OD5HJ8G0R6JI5RvCNUQjwx0FITjjMjnLIpxjvfq+E
+p0gD0UcylKm6rCZqacwnSddHW8W3LxJmCxdxW5lt5dPjAkBYRUnl91ESCiD4Z+uC
+Ol6jLFD2kaOLfuyee0fYCb7GTqOe7EmMB3fGIwSdW8OC8NWTkwpjc0ELblUa6ulO
+t9grSosRTCsZd14OPts4bLspKxMMOsgnKloXvnlPOSwSpWy9Wp6y8XX8+F40rxl5
+XqhDUBhyk1C3YPOiDuPOnMXaIpe1dgb0NdD1M9ZQSNULw1DHCGPP4JSSxX7BWdDK
+aAnWJvFglA4oFBBVA8uAPMfV2XFQnjwUT5bPLC65tFstoRtTZ1uSruai27kxTnLQ
++wQ87lMadds1GQNeGsKSf8R/rsRKeeKcilDePCjeaLqtqxnhNoFtg0Mxt6r2gb1E
+AloQ6jg5Tbj5J7quYXZPylBljNp9GVpinPc3KpHttvgbptfiWEEsZYn5yZPhUr9Q
+r08pkOxArXE2dj7eX+bq65635OJ6TqHbAlTQ1Rs9PulrS7K4SLX7nY89/RZ5oSQe
+2VWRyTZ1FfngJSsv9+Mfvz341lbzOIWmk7WfEcWcHc16n9V0IbSNALnjThvEcPky
+e1BsfSbsf9FguUZkgHAnnfRKkGVG1OVyuwc/LVjmbhZzKwLhaZRNd8HEM86fNojP
+09nVjTaYtWUXk0Si1W02wbu1NzL+1Tg9IpNyISFCFYjSqiyG+WU7IwK3YU5kp3CC
+dYScz63Q2pQafxfSbuv4CMnNpdirVKEo5nRRfK/iaL3X1R3DxV8eSYFKFL6pqpuX
+cY5YZJGAp+JxsnIQ9CFyxIt92frXznsjhlYa8svbVNNfk/9fyX6op24rL2DyESpY
+pnsukBCFBkZHWNNyeN7b5GhTVCodHhzHVFehTuBrp+VuPqaqDvMCVe1DZCb4MjAj
+Mslf+9xK+TXEL3icmIOBRdPyw6e/JlQlVRlmShFpI8eb/8VsTyJSe+b853zuV2qL
+suLaBMxYKm3+zEDIDveKPNaaWZgEcqxylCC/wUyUXlMJ50Nw6JNVMM8LeCii3OEW
+l0ln9L1b/NXpHjGa8WHHTjoIilB5qNUyywSeTBF2awRlXH9BrkZG4Fc4gdmW/IzT
+RUgZkbMQZNIIfzj1QuilRVBm/F76Y/YMrmnM9k/1xSGIskwCUQ+95CGHJE8MkhD3
+-----END RSA PRIVATE KEY-----
+
+</code></pre>
+
+<p>Nice! We have a private key... but what for? Maybe to login by <strong>ssh</strong>? We still need the passphrase for it... 
+I was expecting that <strong>dirb</strong> helped me with the output, but .. unfortunately, it didn't helped me. There were some <strong>php</strong> scrips that seemed to encode/decode base64, but nothing else (well, it has the <strong>/dev</strong> directory):</p>
+<p><img alt="dirb output" src="../images/valentine/dirb.png" /></p>
+<p>Then, I remembered that there was also an HTTPS server and due to the fact that this image is showing us the logo of hearbleed... maybe we can use the heartbleed exploit to gather information from there?
+To perform this part I used <strong>Metasploit</strong> because it already had a <a href="https://www.rapid7.com/db/modules/auxiliary/scanner/ssl/openssl_heartbleed">module</a> to do it. The usage was pretty straighforward, and after a couple of seconds I had some memory samples:</p>
+<p><img alt="msf scan" src="../images/valentine/msf_scan_heartbleed.png" /></p>
+<p><img alt="msf dump" src="../images/valentine/msf_dump_heartbleed.png" /></p>
+<p>After analzing these samples, I found a very interesting thing. There was an HTTP request there:</p>
+<p><img alt="msf dump output" src="../images/valentine/msf_dump_output.png" /></p>
+<p>It was using one the <strong>.php</strong> scripts that we found thanks to <strong>dirb</strong>, which was <strong>decode.php</strong>.. Let's try to decode it:</p>
+<p><img alt="passphrase" src="../images/valentine/passphrase.png" /></p>
+<p><strong>YEAH!</strong> seems we have something usefull here. We have an RSA Private key and now we have something that seems to be a passphrase, but..how can we ensure that this is the correct passphrase?</p>
+<p>In order to ensure it, I issued the following command</p>
+<pre><code class="bash">ssh-keygen -y -f rsa_key.pem
+</code></pre>
+
+<p>with <strong>rsa_key.pem</strong> being the private RSA key.  This command will extract the publick key from the PEM, only if we have the correct passphrase. You, after executing it, and typing the passphrase <strong>heartbleedbelievethehype</strong> the public key was successfully created.</p>
+<p>So far we have the PEM and the passphrase for it. My main idea is that this should be used to connect to the server via <strong>SSH</strong>. But still, we don't know the user. I spent a <strong>LOOOONGG</strong> time thinking that I wasn't issuing a right command to connect using the PEM, but the problem was not the command but the user. I thought that <strong>valentine</strong> had to be the correct one. After a couple of hours (yes, hours) I realize that maybe the user wasn't that one...</p>
+<p>I spent lot of time trying to find the correct user:</p>
+<ul>
+<li>Looking on new samples of memory gathered by exploiting heartbleed.</li>
+<li>Looking in the page source code of the pages hosted in the HTTP Server.</li>
+<li>Trying with common users (guest, www-data, etc).</li>
+<li>Among others.</li>
+</ul>
+<p>Finally, two of my neurons did synapsis and I realized that the file where I found the encoded RSA private key, was called <strong>hype_key</strong>. So I literally ran to type the following command, which <strong>fortunately</strong> gave me access to the machine.</p>
+<pre><code>ssh -v -i rsa_key.pem hype@10.10.10.79
+</code></pre>
+
+<p>Once inside, it was just needed to go to the home directory of this user, and find the <strong>user.txt</strong> file with the hash inside.</p>
+<h2 id="root">Root</h2>
+<p>I copied the <strong>LinEnum.sh</strong> file to the vm, and made a scan but the path finally wasn't that one.
+I wanted to know the Kerknel version so figure it out if there was some exploit for it. then I issued the command:</p>
+<pre><code class="bash">uname -a 
+Linux Valentine 3.2.0-23-generic #36-Ubuntu SMP Tue Apr 10 20:39:51 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+</code></pre>
+
+<p>So yeah, the Kernel seemed to be pretty old. I tried with 4 different exploits, two related with the vulnerability on <strong>perf_swevent_init</strong> and other two related to <strong>dity cow</strong>. Unfortunately, there didn't work (don't know why, specially the latest).</p>
+<p>Finally, I found some <a href="https://www.youtube.com/watch?v=0BHFT8YkApI">video</a> explaining how to use a variant of <strong>dirty cow</strong> to modify the <strong>/etc/passwd/</strong> file in order to create a new user with id 0 (root privileges). <a href="https://raw.githubusercontent.com/FireFart/dirtycow/master/dirty.c">Exploit</a></p>
+<p>The exploit was very straighforwad to use, the only thing I had to change was the value of the salt, for my current user. Afterwards, I was able to run the script. Once it was running, I connected to the system with another shell using the new username and the password that was asked me to set. </p>
+<p><img alt="dirty cow" src="../images/valentine/dirty_cow_on_action.png" /></p>
+<p><img alt="root flag" src="../images/valentine/root_flag.png" /></p>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../poison/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../poison/" class="btn btn-xs btn-link">
+        Poison
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../bashed/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../bashed/" class="btn btn-xs btn-link">
+        Bashed
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

