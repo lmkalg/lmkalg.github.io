@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../../img/favicon.ico">
+        <title>Initial registration to HTB - Partu's blog</title>
+        <link href="../../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../../../css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../../js/jquery-1.10.2.min.js"></script>
+        <script src="../../../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../../../js/highlight.pack.js"></script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="../../..">Partu's blog</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a href="../../..">Home</a>
+                    </li>
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">CTF's <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            
+  <li class="dropdown-submenu">
+    <a href="#">Hack the Box</a>
+    <ul class="dropdown-menu">
+            
+<li class="active">
+    <a href="./">Initial registration to HTB</a>
+</li>
+            
+<li >
+    <a href="../bashed/">Bashed</a>
+</li>
+            
+<li >
+    <a href="../valentine/">Valentine</a>
+</li>
+            
+<li >
+    <a href="../poison/">Poison</a>
+</li>
+            
+<li >
+    <a href="../celestial/">Celestial</a>
+</li>
+            
+<li >
+    <a href="../canape/">Canape (favourite)</a>
+</li>
+    </ul>
+  </li>
+                            
+  <li class="dropdown-submenu">
+    <a href="#">My challenges</a>
+    <ul class="dropdown-menu">
+            
+  <li class="dropdown-submenu">
+    <a href="#">Ekoparty 2017</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../own/eko2017/kidnapped/">Kidnapped</a>
+</li>
+    </ul>
+  </li>
+            
+  <li class="dropdown-submenu">
+    <a href="#">Ekoparty 2018</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../own/eko2018/kidnapped_revenge/">Kidnapped the Revenge</a>
+</li>
+    </ul>
+  </li>
+            
+  <li class="dropdown-submenu">
+    <a href="#">Ekoparty 2019</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../own/eko2019/secret_spy_message/">Secret Spy Message</a>
+</li>
+            
+<li >
+    <a href="../../own/eko2019/rich_text/">The Rich Text</a>
+</li>
+            
+<li >
+    <a href="../../own/eko2019/defuse_bomb/">Defuse the bomb</a>
+</li>
+            
+<li >
+    <a href="../../own/eko2019/guess_my_number/">Guess my number</a>
+</li>
+    </ul>
+  </li>
+    </ul>
+  </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tiny Tools <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            
+<li >
+    <a href="../../../tiny_tools/almost_sudo/">Almost sudo</a>
+</li>
+                            
+<li >
+    <a href="../../../tiny_tools/pastemon/">Pastemon</a>
+</li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Arduino <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            
+<li >
+    <a href="../../../arduino/robot/">Robot</a>
+</li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Revering Windows ETW <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            
+<li >
+    <a href="../../../etw/introduction/">Introduction</a>
+</li>
+                        </ul>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li >
+                        <a rel="next" href="../../..">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../bashed/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#registration">Registration</a></li>
+            <li><a href="#disclaimer">Disclaimer</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="registration">Registration</h1>
+<p>In order to join to the platform, you should solve the first challenge.</p>
+<p>Once in the <strong>JOIN</strong> section, open we are asked to prompt a code. We don't have any code yet, so the first step is to look into the page source to find something. After a digging some time, you will find a link to a JS script: <strong>/js/inviteapi.min.js</strong>. After openning and formating it:</p>
+<pre><code class="javascript">
+eval(
+    function  (p,a,c,k,e,d){
+        e = function(c){return c.toString(36)};
+        if ( !''.replace(/^/,String)){
+            while(c--){
+                d[c.toString(a)] = k[c] || c.toString(a)
+            }
+            k = [function(e){return d[e]}];
+            e = function(){return'\\w+'};
+            c = 1
+        };
+        while(c--){
+            if (k[c]){
+                p = p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])
+            }
+        }
+        return p    
+    }
+    ('1 i(4){h 8={&quot;4&quot;:4};$.9({a:&quot;7&quot;,5:&quot;6&quot;,g:8,b:\'/d/e/n\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}1 j(){$.9({a:&quot;7&quot;,5:&quot;6&quot;,b:\'/d/e/k/l/m\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}',
+    24,
+    24,
+    'response|function|log|console|code|dataType|json|POST|formData|ajax|type|url|success|api|invite|error|data|var|verifyInviteCode|makeInviteCode|how|to|generate|verify'.split('|'),
+    0,
+    {}
+    )
+)
+
+</code></pre>
+
+<p>So basically, it's a JS functiont that it's being called with some specific parameters.</p>
+<p>It's not necessary to fully understand the whole thing, we can just use the Chrome/Firefox JS console and make use of this code. Nevertheless, if you copy &amp; paste it, it won't work due to a name for the function is missing. What I did was just to choose some name, copy only the part of the function definition an afterwards call it with the specific parameters:</p>
+<p><img alt="script result" src="../images/script_result.png" /></p>
+<p>The answer gathered is again JS code:</p>
+<pre><code class="javascript">
+function verifyInviteCode(code){
+    var formData = {&quot;code&quot;:code};
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        data:formData,url:'/api/invite/verify',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+function makeInviteCode(){
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        url:'/api/invite/how/to/generate',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+</code></pre>
+
+<p>This time seems to show us how the <strong>InviteCode</strong> related functions are invoked... Time to use <strong>burp</strong>:</p>
+<p>Issuing the following POST we will receive an answer with some information encoded: </p>
+<pre><code>
+POST /api/invite/how/to/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;data&quot;:&quot;SW4gb3JkZXIgdG8gZ2VuZXJhdGUgdGhlIGludml0ZSBjb2RlLCBtYWtlIGEgUE9TVCByZXF1ZXN0IHRvIC9hcGkvaW52aXRlL2dlbmVyYXRl&quot;,&quot;enctype&quot;:&quot;BASE64&quot;},&quot;0&quot;:200}
+
+</code></pre>
+
+<p>After decoding the value inside <strong>data</strong> which is encoded with the encoding mentioned in <strong>enctype</strong>, you'll get the a message saying:
+<strong>In order to generate the invite code, make a POST request to /api/invite/generate</strong></p>
+<p>So, let folow their order:</p>
+<pre><code>
+POST /api/invite/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;code&quot;:&quot;WElLQVktWFlFWk8tTkpaTEotVVNFQVMtWkJBTE4=&quot;,&quot;format&quot;:&quot;encoded&quot;},&quot;0&quot;:200}
+
+</code></pre>
+
+<p>And here it is.. Our <strong>code</strong> is encoded in base64. Once decoded you'll get your code:</p>
+<p><strong>XIKAY-XYEZO-NJZLJ-USEAS-ZBALN</strong> (in my case).</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>I did the challenge again for the write up because I forgot to do it the first time.
+This time, the code worked perfectly once I typed it. But the first time I did the challenge I remember that I wasn't able to use the code retrieved, and some error saying something about "This IP can't use the code" was triggered. I solved it just connecting through a VPN.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '../../..';</script>
+        <script src="../../../js/base.js"></script>
+        <script src="../../../search/require.js"></script>
+        <script src="../../../search/search.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&larr;</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&rarr;</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </body>
+</html>
