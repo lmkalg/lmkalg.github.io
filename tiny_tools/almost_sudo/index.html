@@ -32,7 +32,12 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "Coming Soon..", url: "#_top", children: [
+          {title: "Almost-Sudo", url: "#_top", children: [
+              {title: "Disclaimer", url: "#disclaimer" },
+              {title: "Requirements", url: "#requirements" },
+              {title: "Steps to use it", url: "#steps-to-use-it" },
+              {title: "Future work", url: "#future-work" },
+              {title: "In depth description", url: "#in-depth-description" },
           ]},
         ];
 
@@ -83,7 +88,45 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
 
-    <h1 id="coming-soon">Coming Soon..</h1>
+    <h1 id="almost-sudo">Almost-Sudo</h1>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>This tiny script which performs an temporary sudo-alias was developed just with awareness and educational intentions.
+Was tested in Ubuntu environments, using either BASH or ZSH shells.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Access to a user shell (Most likely to a sudoer user)</li>
+<li>GPG, netcat installed.</li>
+<li>Network access to shared server.</li>
+<li>Public PGP-key server in the HTTP Server need to be called "pentesting_issues.pdf" (hardcoded)</li>
+</ul>
+<h2 id="steps-to-use-it">Steps to use it</h2>
+<ol>
+<li>Create a pgp-pair key. </li>
+<li>Log in to a shared server (between the target and yourself)</li>
+<li>Set an HTTP-Server hosting the public PGP key at port 6666. (Right know is hardcoded, could be changed, but I don't think is necessary)</li>
+<li>Set an Netcat-Server receiving connections at port 6667, logging all data received to a file. </li>
+<li>Run the script providing the ip/host of the shared server, inside the target machine.</li>
+<li>Connect to the shared server and get the logging file from the NC sever.</li>
+<li>Decript the file using the private PGP key.</li>
+</ol>
+<h2 id="future-work">Future work</h2>
+<p>Every feedback/help will be very welcome.</p>
+<ol>
+<li>Delete temp directory.</li>
+<li>Remove public key from keyring.</li>
+<li>More..</li>
+</ol>
+<h2 id="in-depth-description">In depth description</h2>
+<p>The bash script can be found <a href="https://github.com/lmkalg/almost_sudo">here</a>.</p>
+<p>In order to ease the explaniation it is divided in different parts: </p>
+<ol>
+<li>Checks of parameters and more stuff</li>
+<li>Path and files configurations</li>
+<li>Getting information required</li>
+<li>Script creation</li>
+<li>Creating backup and giving rights to the script to execute</li>
+<li>Writing in the shellrc (sudo alias) and status variable</li>
+</ol>
 
   <br>
 </div>

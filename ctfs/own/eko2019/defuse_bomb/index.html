@@ -225,21 +225,27 @@ From the example request, we can get the a valid <strong>tag</strong>: </p>
 <p>128 bytes as an output it's pretty long. I think that the most famous algorithm which it digest is of 128 bytes is sha-512. </p>
 <p>If you have a little background of crypto you may've already realize what you need to use here. If you lack of it, still, you may understand that you need to create a valid tag, but you need the MAC key for that, which seems to be impossible to retrieve. Unless there is another kind of attack to create a valid tag. </p>
 <p>The <a href="https://en.wikipedia.org/wiki/Length_extension_attack">length extension attack</a> is one of the most famous attacks known for hashes. It basically states that: </p>
-<p>If in a structure like <strong>hash_function(secret+data) = H</strong>, you know:
-<em> Length of  <strong>secret</strong>
-</em> <strong>data</strong>
-* <strong>H</strong> </p>
+<p>If in a structure like <strong>hash_function(secret+data) = H</strong>, you know:</p>
+<ul>
+<li>Length of  <strong>secret</strong></li>
+<li><strong>data</strong></li>
+<li><strong>H</strong> </li>
+</ul>
 <p>It is possible to create <strong>H2</strong> which asserts that:
 <strong>hash_function(secret+data+data2) = H2</strong> with <strong>data2</strong> being some arbitrary data you want to append. </p>
 <p>In other words, knowing the previous hash value, the data that was used to hash and <strong>only</strong> the length of the secret appended, you can append any arbitrary data and a valid hash without never knowing the actual value of the secret.</p>
 <p>HOW?! I won't explain the full details of it, for that you can visit something like this <a href="https://blog.skullsecurity.org/2012/everything-you-need-to-know-about-hash-length-extension-attacks">link</a>, or any other explaination of it. But in quick words this happens only in hashes that are based on some common techinique called Merkle–Damgård. It basically divides the input in blocks and it process each block separately (it's really not separately because it has dependences of previous blocks). This technique has an internal state which is updated each time a new block is processed. The resulting hash value is the internal state after processing the final block. 
 The length extension attack leverages this and continues from the last "checkpoint" (which was the internal state of the final block) and adds more data to it. </p>
-<p>The requirements of this attack seems to fit in our case, but we still have some issues:
-1. We don't know yet the actual hash function that is being used
-2. What data should we append ?</p>
-<p>For <strong>1.</strong> we can make a search in google to see what hashes are vulnerable to this attack (or are based in Merkle–Damgård, which is the same) and also have a 128 bytes of digest. The answer to this is: 
-<em> SHA512
-</em> WHIRPOOL</p>
+<p>The requirements of this attack seems to fit in our case, but we still have some issues:</p>
+<ol>
+<li>We don't know yet the actual hash function that is being used</li>
+<li>What data should we append ?</li>
+</ol>
+<p>For <strong>1.</strong> we can make a search in google to see what hashes are vulnerable to this attack (or are based in Merkle–Damgård, which is the same) and also have a 128 bytes of digest. The answer to this is: </p>
+<ul>
+<li>SHA512</li>
+<li>WHIRPOOL</li>
+</ul>
 <p>Well at this moment we can continue with both algorithms doing the tests, but remember that parts?:</p>
 <pre><code class="python">import %%%%%% as remolino
 ...
@@ -256,12 +262,14 @@ return tag == remolino.new(self.mac_key+decoded_params).hexdigest()
 
 <p>It basically creates a dictionary and updates it with each key value gathered from the body. This means that this way is vulnerable to HPP (Parameter Polution). Therefore we can add our parameter to the end part of the body and when the server process it first will assing the value <strong>activate</strong> to <strong>action</strong> but afterwards will overwrite this value with <strong>defuse</strong> and BINGO!</p>
 <p>Fortunately, we don't have to do all the forging (padding, etc) of the data we want to append. There are some tools that already exist and will make our life easier like <a href="https://github.com/iagox86/hash_extender.git">hash extender</a>. </p>
-<p>This tool will do all the job for us:
-<em> <strong>-d</strong> holds the data that was hashed previously
-</em> <strong>-s</strong> has the hash value of it (the valid tag)
-<em> <strong>-a</strong> holds the data we want to append
-</em> <strong>-f</strong> is the name of the algorithm we want to use
-* <strong>-l</strong> is the length of the secret</p>
+<p>This tool will do all the job for us:</p>
+<ul>
+<li><strong>-d</strong> holds the data that was hashed previously</li>
+<li><strong>-s</strong> has the hash value of it (the valid tag)</li>
+<li><strong>-a</strong> holds the data we want to append</li>
+<li><strong>-f</strong> is the name of the algorithm we want to use</li>
+<li><strong>-l</strong> is the length of the secret</li>
+</ul>
 <pre><code class="bash">./hash_extender -d &quot;bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway&quot; -s d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b -a &quot;&amp;action=defuse&quot; -f whirlpool -l 32 
 Type: whirlpool
 Secret length: 32

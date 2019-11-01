@@ -89,9 +89,11 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     <h1 id="the-rich-text">The Rich Text</h1>
 <h2 id="description">Description</h2>
-<p><em> Category: Cryptography
-</em> Points: 150 / 500 
-* Goal: Understand the risks of XORing</p>
+<ul>
+<li>Category: Cryptography</li>
+<li>Points: 150 / 500 </li>
+<li>Goal: Understand the risks of XORing</li>
+</ul>
 <h2 id="statement">Statement</h2>
 <p>A student has encrypted a file with a really powerful technique (according to him). Can you decrypt it?</p>
 <p>====</p>
@@ -99,10 +101,12 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <h2 id="file">File</h2>
 <p><a href="../resources/text.enc">encrypted text</a></p>
 <h2 id="solution">Solution</h2>
-<p>The very first part of this challenge aimed to play with a little bit of deduction from "metainformation". In other words:
-<em> You've been provided with an encrypted file and nothing else.
-</em> The amount of points of this challenge isn't high, meaning that the technique should be something easy. 
-* Quote from the statement: "[..] with a powerful technique (according to him) [...] "</p>
+<p>The very first part of this challenge aimed to play with a little bit of deduction from "metainformation". In other words:</p>
+<ul>
+<li>You've been provided with an encrypted file and nothing else.</li>
+<li>The amount of points of this challenge isn't high, meaning that the technique should be something easy. </li>
+<li>Quote from the statement: "[..] with a powerful technique (according to him) [...] "</li>
+</ul>
 <p>What is the most common technique that usually people think is really good for encrypting data but almost always fails to work? And also this technique should be known by any student?
 Yes! The answer is XOR. </p>
 <p>Now, even if we know that a XOR was used, we need to know against what was XORed to try to recover the information. </p>
@@ -110,10 +114,12 @@ Yes! The answer is XOR. </p>
 After some <a href="https://lmgtfy.com/?q=the+rich+text&amp;s=g&amp;t=w">googling</a>, the first finding talks about a very well known file format (<strong>.rtf</strong>). </p>
 <p>So at this point, we can think that we know the format of the file that was XORed. If we know the format, means that we know some information of the file, in particular, most formats have what are called <strong>magic bytes</strong> that should be present always. </p>
 <p>The magic bytes of <strong>.rtf</strong> are: <strong>7B 5C 72 74 66 31</strong> or in ascii: <strong>{\rtf1</strong>. These should be the first 6 bytes of our result. </p>
-<p>Doing some math: 
-1. plain_text ⊕ key = cipher_text 
-2. plain_text = cipher_text ⊕ key
-3. plain_text ⊕ cipher_text = key</p>
+<p>Doing some math:</p>
+<ol>
+<li>plain_text ⊕ key = cipher_text </li>
+<li>plain_text = cipher_text ⊕ key</li>
+<li>plain_text ⊕ cipher_text = key</li>
+</ol>
 <p>We don't actually know the length of the key, but we can try to XOR the first 6 bytes (length of <strong>.rtf</strong> magic bytes) of the cipher_text against the magic bytes to get the first 6 bytes of the key:</p>
 <pre><code class="bash">xxd -l 6 text.enc
 00000000: aa59 4264 7f51                           .YBd.Q
