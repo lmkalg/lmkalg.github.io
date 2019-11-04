@@ -32,7 +32,16 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "Coming Soon..", url: "#_top", children: [
+          {title: "Pastemon", url: "#_top", children: [
+              {title: "Description", url: "#description" },
+              {title: "Sourcecode", url: "#sourcecode" },
+              {title: "Requirements", url: "#requirements" },
+              {title: "Install", url: "#install" },
+              {title: "How to use it", url: "#how-to-use-it" },
+              {title: "How does it work", url: "#how-does-it-work" },
+              {title: "Defining rules / conditions", url: "#defining-rules-conditions" },
+              {title: "Example", url: "#example" },
+              {title: "Future work", url: "#future-work" },
           ]},
         ];
 
@@ -83,7 +92,128 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
 
-    <h1 id="coming-soon">Coming Soon..</h1>
+    <h1 id="pastemon">Pastemon</h1>
+<h2 id="description">Description</h2>
+<p>Pastemon is a python3-based multiprocess framework aim to allow you monitor the public pastebins that are continuously uploaded to https://pastebin.com.
+It allows you to match content inside the pastes based on rules written by the user. So far, you are able to match fixed strings or regexes. If some of the rules defined matches, the entire pastebin is stored.</p>
+<p>Very interesting stuff can be found. Start thining on cool regexes ;). </p>
+<h2 id="sourcecode">Sourcecode</h2>
+<p>The source code can be find in https://github.com/lmkalg/pastemon</p>
+<h2 id="requirements">Requirements</h2>
+<p>Pastemon makes use of the <a href="https://pastebin.com/doc_scraping_api">scrapping interface</a> provided by Pastebin. In order to use it, you should whitelist your IP. Therefore, to use Pastemon, you should have a PRO account in Pastebin, otherwise your IP will be blocked after a few seconds. </p>
+<p>The necessary libraries in order to run this tool, are written down in the <strong>requirements.txt</strong>.</p>
+<h2 id="install">Install</h2>
+<p>To install the tools and necessary libraries, it's recommended to use a particular virtual env: </p>
+<pre><code class="python">virtualenv pastemon -p python3
+source pastemon/bin/activate
+cd pastemon
+pip install -r requirements.txt
+python pastemon.py ARGUMENTS
+</code></pre>
+
+<h2 id="how-to-use-it">How to use it</h2>
+<pre><code class="python">usage: pastemon.py [-h] [-d DOWNLOADERS] [-g GETTERS] [-a ANALYZERS]
+                          [-s STORERS] [-r ANALYSIS_DIR_PATH]
+                          [-o OUTPUT_DIR_PATH] [-c CONDITIONS_FILE_PATH]
+                          [-t TIME_TO_WAIT] [-n AMOUNT_OF_PASTES_TO_FETCH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DOWNLOADERS        Amount of downloaders (will download the pastebin
+                        content)
+  -g GETTERS            Amount of getters (will check for new pastebins)
+  -a ANALYZERS          Amount of analyzers (will analyze the pastebin's
+                        content)
+  -s STORERS            Amount of storers (will either store or delete a
+                        pastebin)
+  -r ANALYSIS_DIR_PATH  Path to store the pastes to be analyzed (temporary)
+  -o OUTPUT_DIR_PATH    Path to store the pastes that accomplished some
+                        condition
+  -c CONDITIONS_FILE_PATH
+                        Path to the YAML conditions file
+  -t TIME_TO_WAIT       Amount of time (in secs) to wait between each time it
+                        goes for new pastes. Suggested and default (180)
+  -n AMOUNT_OF_PASTES_TO_FETCH
+                        Amount of pastes to fetch each time it goes for new
+                        pastes. Maximun and default is 250
+</code></pre>
+
+<h2 id="how-does-it-work">How does it work</h2>
+<p>If you are interested in the full architecture of the tool, here you'll find a detailed description:</p>
+<p><img alt="architecture" src="../resources/pastemon_architecture.png" />
+As it is depicted in the picture, there are several components involves in the framework: 
+<em> <strong>Pastebin Server</strong>: This is the only thing that is not controlled by the user. It represents the host where the pastebins are uploaded. 
+</em> <strong>Redis</strong>: A <a href="https://redis.io">redis</a> instance with couple of queues to deal with the async between several processes.
+<em> <strong>Storage</strong>: This is any storage chosen by the user, used to store each pastebin either temporary or definitively (if it matches some rule).
+</em> <strong>Pastebin Monitor</strong>: The actual and initial Python script (pastemon.py) which received the arguments to configure the whole tool.
+<em> <strong>Conditions definition file</strong>: A <strong>.yaml</strong> file where the rules/conditions are defined.
+</em> <strong>Orchestrator</strong>: Naive Python object in charge of initializing the rest objects and validating the input. 
+<em> <strong>Getters</strong>: Python objects in charge of pulling ONLY the new pastes (if there are) and pushing the data related to them (URL, name, etc) to the <strong>Pastes data queue</strong>.
+</em> <strong>Downloaders</strong>: Python objects in charge of pulling the corresponding data of each new pastebin from the <strong>pastes data queue</strong>, to later download the actual content of each of them. Once the contest is downloaded, it is stored in the <strong>Storage</strong> (in particular in the <strong>Analysis Directory</strong>, flag <strong>-r</strong>), the related info (path to the storage) is pushed to the <strong>Pastes to analyze queue</strong>.
+<strong>Analyzers</strong>: Python objects in charge of analyzing the actual content (after getting the path 
+from the <strong>Pastes to analyze queue</strong>). If there is rule that matches, the path to it togeteher with the action that should be carried out (either store it or delete it) is pushed to the <strong>Storers queue</strong>.
+<strong>Storers</strong>: Python objects in charge of either deleting the patebins that didn't match or moving them in the corresponding directory. For each condition/rule defined a directory, inside the output directory provided as parameter, is created.</p>
+<h2 id="defining-rules-conditions">Defining rules / conditions</h2>
+<p>In order to write new rules/conditions to be matched, a <strong>.yaml</strong> file with the following structure should be provided:</p>
+<pre><code class="yaml">[cond1]:
+    [match_cond_1_1]
+    [match_cond_1_2]
+    ...
+
+[cond2]:
+    [match_cond_2_1]
+    [match_cond_2_2]
+    ...
+...
+[condn]:
+    [match_cond_n_1]
+    [match_cond_n_2]
+    ...
+</code></pre>
+
+<ul>
+<li><strong>[condX]</strong>: Will be used as the name of the rule/condition, therefore it will exist a directory with this name where all the matched pastebins will be placed.</li>
+<li><strong>[match_cond_X_Y]</strong>: WIll be each of the parts of the condition that are going to be actually checked. The list of possible parameters up to date are: <ol>
+<li><strong>regex</strong>: If you want to match some regex. (Only one per condition, can't be used with string in the same condition)</li>
+<li><strong>string</strong>: If you want to match a fixed string. (Only one per condition, can't be used with regex in the same condition)</li>
+<li><strong>icase</strong>: True or False. If True, the match is case insensitive. By default, is False.</li>
+<li><strong>times</strong>: A Natural number. Amount of time that the string/regex should match. By default, 1. </li>
+</ol>
+</li>
+</ul>
+<p><strong>Take into account that backslashes "\" must be escaped!!!!!</strong></p>
+<p>Besides the framework itself, a separate script called <strong>tester.py</strong> is shipped. This script allows you to manually/quick understand against which conditions/rules a certain "pastebin" will match: </p>
+<pre><code class="python">python tester.py -c test.yaml -p test.pastebin
+</code></pre>
+
+<p>To see a complete example, head to the next section</p>
+<h2 id="example">Example</h2>
+<pre><code class="python">python pastemon.py -r analysis -o output -c example.yaml
+</code></pre>
+
+<pre><code class="yaml">any_gmail_email:
+    regex: &quot;[^@\\s]+@gmail.com&quot;
+    icase: True
+
+my_name:
+    string: &quot;lmkalg&quot;
+    icase: True
+    times: 5
+
+my_password:
+    string: &quot;34syP4ssW0rd1234&quot;
+</code></pre>
+
+<p>Deeper description:
+1. The first condition named <strong>"any_gmail_email"</strong> will match only when the an email of the gmail domain (no matter the case) is present in the pastebin. In positive case, it will store the pastebin inside the <strong>output/any_gmail_email/</strong> directory.
+2. The second condition named <strong>"my_name"</strong> will match only when the string <strong>"lmkalg"</strong> (no matter the case) is present more than 5 times inside the pastebin. In positive case, it will store the pastebin inside the <strong>output/my_name/</strong> directory.
+3. The third and last condition named <strong>"my_password"</strong> will match only when the string <strong>"34syP4ssW0rd1234"</strong> appears in the pastebin exactly with the same case each letter. If only one of them differs, the match won't occur. In positive case, it will store the pastebin inside the <strong>output/my_password/</strong> directory.</p>
+<h2 id="future-work">Future work</h2>
+<ul>
+<li>Be able to match more than one string/regex in the same condition (near future)</li>
+<li>Be able to monitor by user.</li>
+<li>Extend not only to pastebin, but also to another sources.</li>
+</ul>
 
   <br>
 </div>
