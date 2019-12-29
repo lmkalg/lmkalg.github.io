@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Register X - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+              {title: "1st part: infernoCTF{.(?&lt;=H){21}.[a-z]", url: "#1st-part-infernoctfh21a-z" },
+              {title: "2nd part: (?&lt;=+a){1024}[a-z][a-j]", url: "#2nd-part-43a1024a-za-j" },
+              {title: "3rd part: (?&lt;!([a-u]|[w-z])(j|[a-h])).{2,64}", url: "#3rd-part-a-uw-zja-h264" },
+              {title: "4th part: (?&lt;!\\S){255}n.{2}", url: "#4th-part-s255n2" },
+              {title: "5th part: (?&lt;=\\s)g_fUn\\W", url: "#5th-part-sg_funw" },
+              {title: "6th part: (?&lt;=[A-z])}", url: "#6th-part-a-z" },
+              {title: "7th part: (?&lt;=..{14})", url: "#7th-part-4614" },
+              {title: "8th part: (?&lt;=^.{33})", url: "#8th-part-33" },
+          ]},
+          {title: "Flag", url: "#flag", children: [
+          ]},
+          {title: "Kudos", url: "#kudos", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../really_secure_algorithm/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../really_secure_algorithm/" class="btn btn-xs btn-link">
+        Really Secure Algorithm
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../dank_php/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../dank_php/" class="btn btn-xs btn-link">
+        Dank PHP
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge data</h1>
+<ul>
+<li><strong>Name</strong>: Registering X</li>
+<li><strong>Category</strong>: Misc</li>
+<li><strong>Points</strong>: 300</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>The challenge only had a file to download, which had the following content:</p>
+<pre><code>
+Here's a regex 4 u. Match it if you can...
+
+infernoCTF{.(?&lt;=H){21}.[a-z](?&lt;=\+a){1024}[a-z][a-j](?&lt;!([a-u]|[w-z])(j|[a-h])).{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}(?&lt;=\..{14})(?&lt;=^.{33})
+
+</code></pre>
+
+<p>Never did a challenge like this, so it was an interesting target.
+In order to match this regex,  I split it in part, otherwise it would have be a mess. </p>
+<p>I used the following pages to test the regex: 
+1. https://pythex.org/
+2. https://regex101.com/</p>
+<h2 id="1st-part-infernoctfh21a-z">1st part: infernoCTF{.(?&lt;=H){21}.[a-z]</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.[a-z]
+<strong>Type:</strong> Positive look behind
+<strong>Matching string:</strong> infernoCTF{Hzz</p>
+<h2 id="2nd-part-43a1024a-za-j">2nd part: (?&lt;=+a){1024}[a-z][a-j]</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z][a-j]
+<strong>Type:</strong> Positive look behind
+<strong>Matching string:</strong> infernoCTF{H+azj</p>
+<h2 id="3rd-part-a-uw-zja-h264">3rd part: (?&lt;!([a-u]|[w-z])(j|[a-h])).{2,64}</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}
+<strong>Type:</strong> Negative look behind
+<strong>Matching string:</strong> infernoCTF{H+avixx</p>
+<ul>
+<li><strong>xx</strong> can be any thing</li>
+<li><strong>vi</strong> in order to negate both conditions (maybe with one was enough).</li>
+</ul>
+<h2 id="4th-part-s255n2">4th part: (?&lt;!\S){255}n.{2}</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}
+<strong>Type:</strong> Negative look behind
+<strong>Matching string:</strong> infernoCTF{H+avixx nxx</p>
+<ul>
+<li><strong>xx</strong> can be anything.</li>
+</ul>
+<h2 id="5th-part-sg_funw">5th part: (?&lt;=\s)g_fUn\W</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W
+<strong>Type:</strong> Positive look behind
+<strong>Matching string:</strong> infernoCTF{H+avixx nx g_fUn!</p>
+<ul>
+<li>must be a space before g_fUn</li>
+<li>must end with a non-alphanumeric (/W)</li>
+</ul>
+<h2 id="6th-part-a-z">6th part: (?&lt;=[A-z])}</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}
+<strong>Type:</strong> Positive look behind
+<strong>Matching string:</strong> infernoCTF{H+avixx nx g_fUn^}</p>
+<ul>
+<li>[A-z] involves some non alphanumeric character such as:<ul>
+<li>[</li>
+<li>/</li>
+<li>]</li>
+<li>^</li>
+<li>_
+(check ascii table)</li>
+</ul>
+</li>
+</ul>
+<p><strong>At this point, just to make a little more sense, I changed, to spaces</strong>:
+infernoCTF{H+avi   n  g_fUn^}</p>
+<h2 id="7th-part-4614">7th part: (?&lt;=..{14})</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}(?&lt;=..{14})
+<strong>Type:</strong> Positive look behind
+<strong>Matching string:</strong> infernoCTF{H+avi      .    n  g_fUn^}</p>
+<ul>
+<li>Must be a point (14 chars before) and 14 chars..</li>
+<li>We can add spaces in the part of {2,64}. </li>
+</ul>
+<h2 id="8th-part-33">8th part: (?&lt;=^.{33})</h2>
+<p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}(?&lt;=..{14})(?&lt;=^.{33})
+<strong>Type:</strong> Positive look behind</p>
+<p><strong>Matching string:</strong> infernoCTF{H+avi  .    n  g_fUn^}</p>
+<ul>
+<li>Total amount of chars should be 33.</li>
+<li>Remove some spaces. </li>
+</ul>
+<h1 id="flag">Flag</h1>
+<pre><code>infernoCTF{H+avi  .    n  g_fUn^}
+</code></pre>
+
+<h1 id="kudos">Kudos</h1>
+<p>To <a href="https://twitter.com/NicolasRaus">@NicolasRaus</a> who worked together with me to develop this one.</p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

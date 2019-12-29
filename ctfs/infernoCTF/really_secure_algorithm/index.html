@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Really Secure Algorithm - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+          ]},
+          {title: "Flag", url: "#flag", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../../tiny_tools/almost_sudo/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../../tiny_tools/almost_sudo/" class="btn btn-xs btn-link">
+        Almost sudo
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../register_x/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../register_x/" class="btn btn-xs btn-link">
+        Register X
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge data</h1>
+<ul>
+<li><strong>Name</strong>: Really Secure Algorithm Again</li>
+<li><strong>Category</strong>: Crypto  </li>
+<li><strong>Points</strong>: 170</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>This challenge had only a file with the following content:</p>
+<pre><code>e = 65537
+N = 25693197123978473
+enc_flag = ['0x2135d36aa0c278', '0x3e8f43212dafd7', '0x7a240c1672358', '0x37677cfb281b26', '0x26f90fe5a4bed0', '0xb0e1c482daf4', '0x59c069723a4e4b', '0x8cec977d4159']
+
+Help me find out the secret to decrypt the flag
+</code></pre>
+
+<p>Quickly, we can understand that <strong>N</strong> (which is the result of <strong>P</strong> and <strong>Q</strong>) is extremelly small.
+With the dumbest python factorization script, you can factorize it and get the value of both primes.</p>
+<p>Once factorized:
+<em> <strong>P</strong> = 150758089
+</em> <strong>Q</strong> = 170426657</p>
+<p>(or the other way around, is the same)</p>
+<p>Once we have the primes, we have all to decrypt the message.
+I used <a href="https://github.com/Ganapati/RsaCtfTool">RsaCtfTool</a> to make things even quicker:</p>
+<pre><code>python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x2135d36aa0c278
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x2135d36aa0c278
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x3e8f43212dafd7
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x7a240c1672358
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x37677cfb281b26
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x26f90fe5a4bed0
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0xb0e1c482daf4
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x59c069723a4e4b
+python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x8cec977d4159
+</code></pre>
+
+<p>Answer was:</p>
+<pre><code>[+] Clear text : infe
+[+] Clear text : rnoC
+[+] Clear text : TF{R
+[+] Clear text : SA_k
+[+] Clear text : 3yS_
+[+] Clear text : t00_
+[+] Clear text : SmAl
+[+] Clear text : l}
+</code></pre>
+
+<h1 id="flag">Flag</h1>
+<pre><code>infernoCTF{RSA_k3yS_t00_SmAll}
+</code></pre>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

