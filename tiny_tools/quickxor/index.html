@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Quickxor - lmkalg's blog</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Quickxor", url: "#_top", children: [
+              {title: "Description", url: "#description" },
+              {title: "Source code", url: "#source-code" },
+              {title: "How it works", url: "#how-it-works" },
+              {title: "Benchmark results", url: "#benchmark-results" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script>
+      <script src="../../search/require.js"></script>
+      <script src="../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../arduino/robot/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../arduino/robot/" class="btn btn-xs btn-link">
+        Robot
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../pastemon/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../pastemon/" class="btn btn-xs btn-link">
+        Pastemon
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="quickxor">Quickxor</h1>
+<h2 id="description">Description</h2>
+<p>Quickxor is an assembly x86 written tool that performs XOR between two files. It was developed with two goals: </p>
+<ol>
+<li>Make the XOR much faster than usual tools </li>
+<li>Make fun during the journey (yes, I like developing in assembler ;) )</li>
+</ol>
+<p>Quickxor makes use of XMM registers, which allows to operate with 16 bytes at the same time. </p>
+<h2 id="source-code">Source code</h2>
+<p>The source code can be found <a href="https://github.com/lmkalg/quickxor">here</a>, together with a set of tools for benchmarking against custom tools.</p>
+<h2 id="how-it-works">How it works</h2>
+<p>Quickxor is able to perform XOR between any file of arbitrary size (tested up to 4GB) and a key of maximum 16 bytes. The reason of the latter condition is the main way it works. </p>
+<h3 id="byte-by-byte-xoring">Byte by byte xoring</h3>
+<p>Let's suppose that we want to XOR a file of 2GB against a key of 2 bytes. </p>
+<p>If we were coding in Python or even in C we will do that byte by byte. For example: </p>
+<pre><code class="c">unsigned int i;
+for(i=0; i &lt; file_len; i++){
+    result_buffer[i] = key_buffer[i%key_len] ^ file_buffer[i];
+}
+</code></pre>
+
+<p>If we compile a program that performs this (even with <strong>-O2</strong> GCC flag), the assembly code created will be:
+<img alt="basic_block_xor_c" src="../resources/quickxor/basic_block_xor.png" /></p>
+<p><strong>This was compiled with gcc version 9.2.1 20191102</strong></p>
+<p>As you can quickly see the xor line is using the register <strong>al</strong> which means that it is being carried out byte by byte. Furthermore, this implies that for each byte, it will have to access memory, meaning a lot of accesses!.</p>
+<h3 id="faster-way-of-xoring">Faster way of xoring?</h3>
+<p>Quickxor tries to decrease the amount of accesses by operating with several bytes at the same time.</p>
+<pre><code>    ;xmm2 holds the super key
+    mov xmm1, [ptr_file] ; Reading 16 bytes from the file
+    pxor xmm1, xmm2 ; Xor 16 bytes at once.
+</code></pre>
+
+<p>But the question is.. How we build xmm2? 
+Let's see.. if we have a key of 2 bytes... and registers up to 16 bytes. We can make fit the key 8 times inside the register and then perform 16 XOR's in one instruction!
+At the very beginning, Quickxor will create a "super key": an XMM register with the maximum number of times that the key fixes inside it.
+These are the possible cases:</p>
+<table>
+<thead>
+<tr>
+<th>Key length</th>
+<th># times it fits</th>
+<th># of bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>16</td>
+<td>16</td>
+</tr>
+<tr>
+<td>2</td>
+<td>8</td>
+<td>16</td>
+</tr>
+<tr>
+<td>3</td>
+<td>5</td>
+<td>15</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>16</td>
+</tr>
+<tr>
+<td>5</td>
+<td>3</td>
+<td>15</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>12</td>
+</tr>
+<tr>
+<td>7</td>
+<td>2</td>
+<td>14</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2</td>
+<td>16</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1</td>
+<td>9</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>11</td>
+<td>1</td>
+<td>11</td>
+</tr>
+<tr>
+<td>12</td>
+<td>1</td>
+<td>12</td>
+</tr>
+<tr>
+<td>13</td>
+<td>1</td>
+<td>13</td>
+</tr>
+<tr>
+<td>14</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>15</td>
+<td>1</td>
+<td>15</td>
+</tr>
+<tr>
+<td>16</td>
+<td>1</td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<p>Reading the table we can infer that, in the worst case scenario, Quickxor will operate with 9 bytes at the same time.
+Which means that is much faster than the afore showed naive tool (9x?)</p>
+<h3 id="general-operation">General operation</h3>
+<p>To perform such thing, Quickxor first defines the number of:
+1. Number of rounds: Number of times that we will have to perform a xor (except last round)
+2. Number of bytes that will be xored in each round: Based on the key (what the previous table shows)
+3. Number of bytes that will have to be xored in the last round: This have to be treated differently.</p>
+<p>If we are working with a file of size 22 bytes with a key of 9: 
+1. Will be 22/9 (entire division) = 2
+2. Will be 9 (according to table)
+3. 22%9 = 4. </p>
+<p>In other words, this means that Quickxor will perform 2 rounds of Xoring 9 bytes, and then separately, will xor 4 bytes.
+The last part is the most difficult and that's the reason why it should be treated differently.
+Quickxor should and do care about invalid read/write access. Performing and out of bounds read/write may cause a segmentation fault in the program. That was why the last part is performed reading and writing byte by byte.</p>
+<p>Maybe it sounds easy and clear, but it wasn't.. at least for me...</p>
+<h3 id="ensure-avoiding-invalid-readwrite-access">Ensure avoiding invalid read/write access</h3>
+<p>When we operate byte by byte, it's easy to have control of the boundaries. But.. what happens when we want to read 16 bytes at once? </p>
+<p>During my journey I faced an issue that wasn't easy to catch: 
+Let's use the same example as before: a file of size 22 bytes with a key of 9.</p>
+<p>One of the Quickxor main cycles was in charge of detecting when it was time to jump the last round (byte by byte xoring). The following pseudo-code tries to depict it:</p>
+<pre><code>while (number_of_leftover_bytes &lt; number_of_bytes_to_xor_by_round){
+    grab_16_bytes_from_file()
+    xor_number_of_bytes()
+    write_xor_result_to_result_buffer()
+    number_of_leftover_bytes -= number_of_bytes_to_xor_by_round
+}
+</code></pre>
+
+<p>Maybe somebody can spot the error very fast (also because in pseudo code or even in C may be easier). I can assure you that in the assembly code was not that easy.</p>
+<p>Let's apply our example to find the error. After the first round, the <strong>number_of_leftover_bytes</strong> will be 13 (22-9), meaning that the condition will be accomplish successfully and a second round of the cycle will be executed.
+However, the pointer to the file is just 13 bytes far from the end. When the first function of the cycle is performed, we will try to read 16 bytes and an invalid read will be executed (by 3 bytes in this case).</p>
+<p>This type of issues weren't easy to spot. That's why I developed a set of (functional and memory) tests to ensure that every change in the assembly code doesn't break anything.</p>
+<h2 id="benchmark-results">Benchmark results</h2>
+<p>While developing Quickxor, I wanted to test that what I thought in theory was actually working (xoring multiple bytes in one intruction was faster than byte by byte).
+So, I developed a simple C script that performs a byte by byte xor. Its code can be found in the repository as well. </p>
+<p>Together with this tool, I developed a kind of framework, that allows you compare the speed of Quickxor against any tool of your preference (for more info refer to the README.md).</p>
+<p>In this section I'll show the output of this framework using both tool developed: Quickxor, and my C version called xor_in_c (very original).
+(both tools have the source code, except for the part that actually performs the xor). </p>
+<p>Disclaimer: </p>
+<ul>
+<li>All tests were performed in the same machine.  </li>
+<li>xor_in_c was compiled using <strong>"-O2"</strong>.</li>
+</ul>
+<p><img alt="elapsed_by_file" src="../resources/quickxor/elapsed_time_by_file.png" /></p>
+<p>As we can see clearly in this graph, the curve for xor_in_c is much steeper, and increases almost in a linearly. While Quickxor has a smoother curve.
+The difference between times is easy spottable and allows to quickly understand which one operates faster.</p>
+<p>I hope you enjoy the tool. Feel free to send me back some feedback and to propose improvements!</p>
+<p>@lmkalg.</p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
