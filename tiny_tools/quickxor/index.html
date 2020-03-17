@@ -217,14 +217,18 @@ These are the possible cases:</p>
 <p>Reading the table we can infer that, in the worst case scenario, Quickxor will operate with 9 bytes at the same time.
 Which means that is much faster than the afore showed naive tool (9x?)</p>
 <h3 id="general-operation">General operation</h3>
-<p>To perform such thing, Quickxor first defines the number of:
-1. Number of rounds: Number of times that we will have to perform a xor (except last round)
-2. Number of bytes that will be xored in each round: Based on the key (what the previous table shows)
-3. Number of bytes that will have to be xored in the last round: This have to be treated differently.</p>
-<p>If we are working with a file of size 22 bytes with a key of 9: 
-1. Will be 22/9 (entire division) = 2
-2. Will be 9 (according to table)
-3. 22%9 = 4. </p>
+<p>To perform such thing, Quickxor first defines the number of:</p>
+<ol>
+<li>Number of rounds: Number of times that we will have to perform a xor (except last round)</li>
+<li>Number of bytes that will be xored in each round: Based on the key (what the previous table shows)</li>
+<li>Number of bytes that will have to be xored in the last round: This have to be treated differently.</li>
+</ol>
+<p>If we are working with a file of size 22 bytes with a key of 9: </p>
+<ol>
+<li>Will be 22/9 (entire division) = 2</li>
+<li>Will be 9 (according to table)</li>
+<li>22%9 = 4. </li>
+</ol>
 <p>In other words, this means that Quickxor will perform 2 rounds of Xoring 9 bytes, and then separately, will xor 4 bytes.
 The last part is the most difficult and that's the reason why it should be treated differently.
 Quickxor should and do care about invalid read/write access. Performing and out of bounds read/write may cause a segmentation fault in the program. That was why the last part is performed reading and writing byte by byte.</p>
