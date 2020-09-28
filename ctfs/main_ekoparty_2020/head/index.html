@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Head - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge Data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../mod/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../mod/" class="btn btn-xs btn-link">
+        Mod
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../env/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../env/" class="btn btn-xs btn-link">
+        Env
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge Data</h1>
+<ul>
+<li><strong>Name</strong>: Head</li>
+<li><strong>Category</strong>: Git</li>
+<li><strong>Points</strong>: 438/500</li>
+<li><strong>Worked together with</strong>: <a href="https://twitter.com/Juampiiakd">@jaccinelli</a></li>
+<li><strong>Description</strong>: A common mistake on websites deployments. <a href="http://head.ctf.cap.tf:30000">My webshell</a></li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>Once you entered to http://head.ctf.cap.tf:30000 you find a screen with a blank space which seems to be a password placeholder.</p>
+<p><img alt="head_1" src="../images/head_1.png" /></p>
+<p>We used burp to understand what was going on. Only one variable, part of a POST, was being sent. We started playing with that parameter and due to we were dealing with PHP we tried to use an array: 
+<img alt="head_2" src="../images/head_2.png" /></p>
+<p>The answer was interesting. 
+<img alt="head_3" src="../images/head_3.png" /></p>
+<p>The underlaying PHP was calculating the MD5 of our param. Which sounded reasonable as we were dealing with a password.
+We continue trying to dig more about this service. By analyzing the description of the challenge again and also because it was in the <strong>git</strong> category, we decided to test accessing /.git dir. 
+Unfortunately, a 404 HTTP error was retrieved. Then we tried with <strong>dirbuster</strong> but wasn't useful at all. </p>
+<p>Finally, using also the name of the challenge, we decided to test /.git/HEAD: 
+<img alt="head_4" src="../images/head_4.png" /></p>
+<p>Cool! The <strong>.git</strong> directory was being leaked! 
+We started inspecting the different files of the directory manually, until we thougth that was better to download every file from it.  We found this awesome tool called <a href="https://github.com/internetwache/GitTools/blob/master/Dumper/gitdumper.sh">gitdumper</a>. We executed it and after a couple of second, we had all the content inside our machines. </p>
+<p>The first file that we found was the <strong>index.php</strong>. The first lines of it were:</p>
+<pre><code class="php">&lt;?php
+/*
+        b374k shell 3.2.3
+        Jayalah Indonesiaku
+        (c)2020
+        https://github.com/b374k/b374k
+
+*/
+$GLOBALS['pass'] = file_get_contents('../secret'); // sha1(md5(pass))
+[..]
+</code></pre>
+
+<p>It was defining the global parameter called <strong>pass</strong> with some fixed value from a file that wasn't readeable for us. After that line there were some strange lines. </p>
+<p>By inspecting the comments (at the top of the file) and some previous commits, we realized that this <strong>index.php</strong> was hosting a Web Shell called <strong>b374k</strong>. It was encoded so it wasn't easy to read it. </p>
+<p>We then inspected older commits and found that in the first version of this repo, the value of <strong>../secret</strong> was hardcoded:
+<img alt="head_5" src="../images/head_5.png" />
+However, this was the SHA1 of the MD5 of the real password. Nevertheless, we tried to use it as the password on the http://head.ctf.cap.tf:30000 screen, but it didn't work. </p>
+<p>In this same commit we found the webshell (shell.php) totally decoded, so we could perform a more straightforward analysis of it. 
+By doing this analysis and a careful eye of @jaccinelli, we finally found the function that was performing the authorization check:</p>
+<pre><code class="php">if(!function_exists('auth')){
+        function auth(){
+                if(isset($GLOBALS['pass']) &amp;&amp; (trim($GLOBALS['pass'])!='')){
+                        $c = $_COOKIE;
+                        $p = $_POST;
+                        if(isset($p['pass'])){
+                                $your_pass = sha1(md5($p['pass']));
+                                if($your_pass==$GLOBALS['pass']){
+                                        setcookie(&quot;pass&quot;, $your_pass, time()+36000, &quot;/&quot;);
+                                        header(&quot;Location: &quot;.get_self());
+                                }
+                        }
+
+                        if(!isset($c['pass']) || ((isset($c['pass'])&amp;&amp;($c['pass']!=$GLOBALS['pass'])))){
+                                $res = &quot;&lt;!doctype html&gt;
+            [..]
+            die();
+</code></pre>
+
+<p>Seems that there are two ways of authentication. If we could successfully meet one of those conditions we’d be able to log in. 
+1. Using the correct pass. We only had the sha1 of the md5 of the correct pass, so it was impossible to retrieve it from there. 
+2. The second one was comparing the value of a cookie called pass against the value of $GLOBALS['pass']. But the value of global pass, as we saw before, was the hash of the hash of final password (the value that we already had). </p>
+<p>So it was enough to set a new cookie call pass with the value 134413ad5fa6b459b14ac999dc5f45f5f2647d19 and we successfully logged in.
+<img alt="head_6" src="../images/head_6.png" /></p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

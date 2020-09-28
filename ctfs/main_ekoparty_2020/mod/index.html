@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Mod - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge Data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../INF/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../INF/" class="btn btn-xs btn-link">
+        INF
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../head/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../head/" class="btn btn-xs btn-link">
+        Head
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge Data</h1>
+<ul>
+<li><strong>Name</strong>: Mod</li>
+<li><strong>Category</strong>: Misc</li>
+<li><strong>Points</strong>: 473/500</li>
+<li><strong>Description</strong>: "Can you tell us what is the product running in this sofware from Area 43?" mod.eko.cap.tf port 502</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>I did an Nmap against this server at that port and figured it out that was running some service which was capable of talking the MODBUS protocol. I've never dealt with this kind of protocol/services so I have to start looking for information about it in Google. </p>
+<p>I downloaded/use several tools: 
+    * <a href="https://www.modbusdriver.com/modpoll.html">modpoll</a>
+    * <a href="https://github.com/rapid7/metasploit-framework/blob/master/modules/auxiliary/scanner/scada/modbusclient.rb">Metasploit module for modbus</a>
+    * [pymodbus] (https://pymodbus.readthedocs.io/en/latest/readme.html)
+    * <a href="https://github.com/tallakt/modbus-cli">modbus-cli</a></p>
+<p>All of them always raised me errors: 
+<img alt="modbus_1" src="../images/modbus_1.png" />
+<img alt="modbus_2" src="../images/modbus_2.png" />
+<img alt="modbus_3" src="../images/modbus_3.png" /></p>
+<p>I continued looking for more info/tool, until I found one that gave me the answer I was looking for :). Thanks: <a href="https://github.com/meeas/plcscan">plcscan</a>
+<img alt="modbus_4" src="../images/modbus_4.png" /></p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

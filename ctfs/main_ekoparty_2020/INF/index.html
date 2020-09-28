@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>INF - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge Data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+              {title: "TL;DR", url: "#tldr" },
+              {title: "Ideas (which didn't work)", url: "#ideas-which-didnt-work" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../cheater/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../cheater/" class="btn btn-xs btn-link">
+        Cheater
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../mod/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../mod/" class="btn btn-xs btn-link">
+        Mod
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge Data</h1>
+<ul>
+<li><strong>Name</strong>: INF</li>
+<li><strong>Category</strong>: Misc</li>
+<li><strong>Points</strong>: 427/500</li>
+<li><strong>Description</strong>: A PHP code</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>The php code was:</p>
+<pre><code class="php">&lt;?php
+$i = 0; $answer = '';
+while (true) {
+    $answer = md5($answer, true);
+    if (bin2hex($answer) === '4f6dfbf954845988ff49f95b61c68005') echo &quot;EKO{$i}&quot;;
+}
+?&gt;
+</code></pre>
+
+<p>Basically, the code is calculating the hash(hash(hash(hash(....(hash(""))))))). The flag can be think as "the number of times you need to apply hash recursively until you get the value '4f6dfbf954845988ff49f95b61c68005'. Trying to crack that hash, won't be helpful. We just need the number of times. </p>
+<h2 id="tldr">TL;DR</h2>
+<p>Just run the code in PHP, wait for a while. You'll get the answer. </p>
+<h2 id="ideas-which-didnt-work">Ideas (which didn't work)</h2>
+<p>When I first saw this challenge I thought it would be impossible to run it and find the answer (mental note for next similar challenge, run it anyways).
+(I think that the author of this challenge may have think that dumb people like me will think the same thing xD). 
+So I started thinking about the different ideas. </p>
+<p>When you define a variable in PHP with: </p>
+<pre><code class="php">$variable = 0;
+</code></pre>
+
+<p>The type of that variable is Integer. So I thought what would happen if you achieve the <strong>PHP_INT_MAX</strong>? 
+I developed a little PHP snippet which gave me a very interesting result: </p>
+<pre><code class="php">&lt;?php
+$i = PHP_INT_MAX;
+echo &quot;MAX int: &quot; . $i.&quot; &quot; .gettype($i).&quot;&lt;br&gt;&quot;;
+$i++;
+echo &quot;MAX INT +1: &quot; . $i. &quot; &quot; .gettype($i).&quot;&lt;br&gt;&quot;;
+$iteration = 100000000;
+$j=$i + $iteration;
+while ($iteration!=0){
+  $iteration--;
+  $i++;
+}
+echo &quot;Max Int + 1kk: &quot;.$i. &quot; &quot; .gettype($i).&quot;&lt;br&gt;&quot;;
+echo &quot;Max Int + 1kk d1: &quot;.$j.&quot; &quot; .gettype($i).&quot;&lt;br&gt;&quot;;
+</code></pre>
+
+<p>The result of running this code is: 
+<img alt="inf_1" src="../images/inf_1.png" /></p>
+<p>Once the integer value achieves PHP_INT_MAX +1, it dinamically changes its type and get convered to a <strong>Double</strong>. However, as can be seen in the screenshot, the once the variable is a double the ++ doesn't increments its value again. 
+This meant that if the value '4f6dfbf954845988ff49f95b61c68005' is achieved after PHP_INT_MAX times, the value of <strong>$i</strong> will be 9.22337203685E+18. I thought it was a solid idea, so I tried to use this as a flag. But it didn't work. Reason: The  hash value was achieved before PHP_INT_MAX times.</p>
+<p>When we decided to run this code anyways, I developed a C script, but was worthless due to another teammate got the flag bofore just using the PHP :) . </p>
+<p>Anways, here is the code. I based my code on an answer of the thread of stackoverflow that I don't find now :(</p>
+<pre><code class="c">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#if defined(__APPLE__)
+#  define COMMON_DIGEST_FOR_OPENSSL
+#  include &lt;CommonCrypto/CommonDigest.h&gt;
+#  define SHA1 CC_SHA1
+#else
+#include &lt;openssl/md5.h&gt;
+#endif
+
+char *str2md5(const char *str, int length) {
+    int n;
+    MD5_CTX c;
+    unsigned char digest[16];
+    char *out = (char*)malloc(33);
+
+    MD5_Init(&amp;c);
+
+    while (length &gt; 0) {
+        if (length &gt; 512) {
+            MD5_Update(&amp;c, str, 512);
+        } else {
+            MD5_Update(&amp;c, str, length);
+        }
+        length -= 512;
+        str += 512;
+    }
+
+    MD5_Final(digest, &amp;c);
+
+    for (n = 0; n &lt; 16; ++n) {
+        snprintf(&amp;(out[n*2]), 16*2, &quot;%02x&quot;, (unsigned int)digest[n]);
+    }
+
+    return out;
+}
+
+    int main(int argc, char **argv) {
+        int j=0;
+        char *output_mine = malloc(33); 
+        char* output;
+        output = str2md5(&quot;&quot;, strlen(&quot;&quot;));
+        memcpy(output_mine, output, 32);
+        free(output);
+        while (1){
+            if (strcmp(output_mine,&quot;4f6dfbf954845988ff49f95b61c68005&quot;) == 0){
+                printf(&quot;%s\n&quot;, output_mine);
+                printf(&quot;%d\n&quot;,j);
+                return 0;
+            }
+            output = str2md5(output_mine, strlen(output_mine));
+            memcpy(output_mine, output, 32);
+            free(output);
+            j = j + 1;
+        }
+        //
+        return 0;
+    }
+</code></pre>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

