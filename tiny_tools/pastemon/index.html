@@ -47,8 +47,7 @@
 
     </script>
     <script src="../../js/base.js"></script>
-      <script src="../../search/require.js"></script>
-      <script src="../../search/search.js"></script> 
+      <script src="../../search/main.js"></script> 
 </head>
 
 <body>
@@ -64,7 +63,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -104,13 +102,12 @@ It allows you to match content inside the pastes based on rules written by the u
 <p>The necessary libraries in order to run this tool, are written down in the <strong>requirements.txt</strong>.</p>
 <h2 id="install">Install</h2>
 <p>To install the tools and necessary libraries, it's recommended to use a particular virtual env: </p>
-<pre><code class="bash">virtualenv pastemon -p python3
+<pre><code class="language-bash">virtualenv pastemon -p python3
 source pastemon/bin/activate
 cd pastemon
 pip install -r requirements.txt
 python pastemon.py ARGUMENTS
 </code></pre>
-
 <h2 id="how-to-use-it">How to use it</h2>
 <pre><code>usage: pastemon.py [-h] [-d DOWNLOADERS] [-g GETTERS] [-a ANALYZERS]
                           [-s STORERS] [-r ANALYSIS_DIR_PATH]
@@ -137,7 +134,6 @@ optional arguments:
                         Amount of pastes to fetch each time it goes for new
                         pastes. Maximun and default is 250
 </code></pre>
-
 <h2 id="how-does-it-work">How does it work</h2>
 <p>If you are interested in the full architecture of the tool, here you'll find a detailed description:</p>
 <p><img alt="architecture" src="../resources/pastemon_architecture.png" />
@@ -157,7 +153,7 @@ from the <strong>Pastes to analyze queue</strong>). If there is rule that matche
 </ul>
 <h2 id="defining-rules-conditions">Defining rules / conditions</h2>
 <p>In order to write new rules/conditions to be matched, a <strong>.yaml</strong> file with the following structure should be provided:</p>
-<pre><code class="yaml">[cond1]:
+<pre><code class="language-yaml">[cond1]:
     [match_cond_1_1]
     [match_cond_1_2]
     ...
@@ -172,7 +168,6 @@ from the <strong>Pastes to analyze queue</strong>). If there is rule that matche
     [match_cond_n_2]
     ...
 </code></pre>
-
 <ul>
 <li><strong>[condX]</strong>: Will be used as the name of the rule/condition, therefore it will exist a directory with this name where all the matched pastebins will be placed.</li>
 <li><strong>[match_cond_X_Y]</strong>: WIll be each of the parts of the condition that are going to be actually checked. The list of possible parameters up to date are: <ol>
@@ -185,15 +180,13 @@ from the <strong>Pastes to analyze queue</strong>). If there is rule that matche
 </ul>
 <p><strong>Take into account that backslashes "\" must be escaped!!!!!</strong></p>
 <p>Besides the framework itself, a separate script called <strong>tester.py</strong> is shipped. This script allows you to manually/quick understand against which conditions/rules a certain "pastebin" will match: </p>
-<pre><code class="python">python tester.py -c test.yaml -p test.pastebin
+<pre><code class="language-python">python tester.py -c test.yaml -p test.pastebin
 </code></pre>
-
 <p>To see a complete example, head to the next section</p>
 <h2 id="example">Example</h2>
-<pre><code class="python">python pastemon.py -r analysis -o output -c example.yaml
+<pre><code class="language-python">python pastemon.py -r analysis -o output -c example.yaml
 </code></pre>
-
-<pre><code class="yaml">any_gmail_email:
+<pre><code class="language-yaml">any_gmail_email:
     regex: &quot;[^@\\s]+@gmail.com&quot;
     icase: True
 
@@ -205,7 +198,6 @@ my_name:
 my_password:
     string: &quot;34syP4ssW0rd1234&quot;
 </code></pre>
-
 <p>Deeper description:</p>
 <ol>
 <li>The first condition named <strong>"any_gmail_email"</strong> will match only when the an email of the gmail domain (no matter the case) is present in the pastebin. In positive case, it will store the pastebin inside the <strong>output/any_gmail_email/</strong> directory.</li>

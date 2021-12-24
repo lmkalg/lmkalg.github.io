@@ -42,8 +42,7 @@
 
     </script>
     <script src="../../../../js/base.js"></script>
-      <script src="../../../../search/require.js"></script>
-      <script src="../../../../search/search.js"></script> 
+      <script src="../../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -59,7 +58,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -121,12 +119,11 @@ After some <a href="https://lmgtfy.com/?q=the+rich+text&amp;s=g&amp;t=w">googlin
 <li>plain_text ⊕ cipher_text = key</li>
 </ol>
 <p>We don't actually know the length of the key, but we can try to XOR the first 6 bytes (length of <strong>.rtf</strong> magic bytes) of the cipher_text against the magic bytes to get the first 6 bytes of the key:</p>
-<pre><code class="bash">xxd -l 6 text.enc
+<pre><code class="language-bash">xxd -l 6 text.enc
 00000000: aa59 4264 7f51                           .YBd.Q
 </code></pre>
-
 <p>Then, I used the following tiny python3 script:</p>
-<pre><code class="python3">import binascii 
+<pre><code class="language-python3">import binascii 
 cipher_text = b&quot;\xaa\x59\x42\x64\x7f\x51&quot;
 magic_bytes = b&quot;\x7b\x5c\x72\x74\x66\x31&quot;
 result = bytearray()
@@ -134,12 +131,11 @@ for i in range(6):
     result.append(cipher_text[i] ^ magic_bytes[i])
 print(binascii.hexlify(result))
 </code></pre>
-
 <p>The answer was: b'd10530101960'. 
 Which means that the first 6 bytes of our key are: <strong>D1 05 30 10 19 60</strong>.</p>
 <p>Now, lets try to XOR the ciphertext against the key (key with 6 bytes) and see if we can get an interesting (or potentially all) part of the plain text (as step 2. in math part stated).</p>
 <p>For this I used almost the same python3 script but adapted:</p>
-<pre><code class="python3">import sys
+<pre><code class="language-python3">import sys
 cipher_text = bytearray(open(sys.argv[1], 'rb').read())
 key = b&quot;\xd1\x05\x30\x10\x19\x60&quot;
 result = bytearray()
@@ -147,10 +143,9 @@ for i in range(len(cipher_text)):
     result.append(cipher_text[i] ^ key[i%len(key)])
 open(&quot;output.rtf&quot;, 'wb').write(result)
 </code></pre>
-
 <p>If we run this script a file <strong>output.rtf</strong> will appear.
 Luckily this file is the complete <strong>.rtf</strong> file and we can get the flag in plain text from there: </p>
-<pre><code class="bash">cat output.rtf
+<pre><code class="language-bash">cat output.rtf
 
 {\rtf1\ansi\deff3\adeflang1025
 {\fonttbl{\f0\froman\fprq2\fcharset0 Times New Roman;}{\f1\froman\fprq2\fcharset2 Symbol;}{\f2\fswiss\fprq2\fcharset0 Arial;}{\f3\froman\fprq2\fcharset0 Liberation Serif{\*\falt Times New Roman};}{\f4\fswiss\fprq2\fcharset0 Liberation Sans{\*\falt Arial};}{\f5\fnil\fprq2\fcharset0 Noto Sans CJK SC Regular;}{\f6\fnil\fprq2\fcharset0 FreeSans;}{\f7\fswiss\fprq0\fcharset0 FreeSans;}}
@@ -170,7 +165,6 @@ Luckily this file is the complete <strong>.rtf</strong> file and we can get the 
 The flag is: ONA\{b06901c39072abf000563ea92968cbf93b26d4d4\}}
 \par }% 
 </code></pre>
-
 <p>Therefore, the flag was </p>
 <pre><code>ONA{b06901c39072abf000563ea92968cbf93b26d4d4}
 </code></pre>

@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -127,7 +125,6 @@ RUgZkbMQZNIIfzj1QuilRVBm/F76Y/YMrmnM9k/1xSGIskwCUQ+95CGHJE8MkhD3
 -----END RSA PRIVATE KEY-----
 
 </code></pre>
-
 <p>Nice! We have a private key... but what for? Maybe to login by <strong>ssh</strong>? We still need the passphrase for it... 
 I was expecting that <strong>dirb</strong> helped me with the output, but .. unfortunately, it didn't helped me. There were some <strong>php</strong> scrips that seemed to encode/decode base64, but nothing else (well, it has the <strong>/dev</strong> directory):</p>
 <p><img alt="dirb output" src="../images/valentine/dirb.png" /></p>
@@ -141,9 +138,8 @@ To perform this part I used <strong>Metasploit</strong> because it already had a
 <p><img alt="passphrase" src="../images/valentine/passphrase.png" /></p>
 <p><strong>YEAH!</strong> seems we have something usefull here. We have an RSA Private key and now we have something that seems to be a passphrase, but..how can we ensure that this is the correct passphrase?</p>
 <p>In order to ensure it, I issued the following command</p>
-<pre><code class="bash">ssh-keygen -y -f rsa_key.pem
+<pre><code class="language-bash">ssh-keygen -y -f rsa_key.pem
 </code></pre>
-
 <p>with <strong>rsa_key.pem</strong> being the private RSA key.  This command will extract the publick key from the PEM, only if we have the correct passphrase. You, after executing it, and typing the passphrase <strong>heartbleedbelievethehype</strong> the public key was successfully created.</p>
 <p>So far we have the PEM and the passphrase for it. My main idea is that this should be used to connect to the server via <strong>SSH</strong>. But still, we don't know the user. I spent a <strong>LOOOONGG</strong> time thinking that I wasn't issuing a right command to connect using the PEM, but the problem was not the command but the user. I thought that <strong>valentine</strong> had to be the correct one. After a couple of hours (yes, hours) I realize that maybe the user wasn't that one...</p>
 <p>I spent lot of time trying to find the correct user:</p>
@@ -156,15 +152,13 @@ To perform this part I used <strong>Metasploit</strong> because it already had a
 <p>Finally, two of my neurons did synapsis and I realized that the file where I found the encoded RSA private key, was called <strong>hype_key</strong>. So I literally ran to type the following command, which <strong>fortunately</strong> gave me access to the machine.</p>
 <pre><code>ssh -v -i rsa_key.pem hype@10.10.10.79
 </code></pre>
-
 <p>Once inside, it was just needed to go to the home directory of this user, and find the <strong>user.txt</strong> file with the hash inside.</p>
 <h2 id="root">Root</h2>
 <p>I copied the <strong>LinEnum.sh</strong> file to the vm, and made a scan but the path finally wasn't that one.
 I wanted to know the Kerknel version so figure it out if there was some exploit for it. then I issued the command:</p>
-<pre><code class="bash">uname -a 
+<pre><code class="language-bash">uname -a 
 Linux Valentine 3.2.0-23-generic #36-Ubuntu SMP Tue Apr 10 20:39:51 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
 </code></pre>
-
 <p>So yeah, the Kernel seemed to be pretty old. I tried with 4 different exploits, two related with the vulnerability on <strong>perf_swevent_init</strong> and other two related to <strong>dity cow</strong>. Unfortunately, there didn't work (don't know why, specially the latest).</p>
 <p>Finally, I found some <a href="https://www.youtube.com/watch?v=0BHFT8YkApI">video</a> explaining how to use a variant of <strong>dirty cow</strong> to modify the <strong>/etc/passwd/</strong> file in order to create a new user with id 0 (root privileges). <a href="https://raw.githubusercontent.com/FireFart/dirtycow/master/dirty.c">Exploit</a></p>
 <p>The exploit was very straighforwad to use, the only thing I had to change was the value of the salt, for my current user. Afterwards, I was able to run the script. Once it was running, I connected to the system with another shell using the new username and the password that was asked me to set. </p>

@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -98,15 +96,14 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <p>The challenge was a link to a server hosting a game. By going to the webpage of the game an analyzing its traffic we realised that it was asking for 3 different and interesting resources: </p>
 <p><img alt="cheater_2" src="../images/cheater_2.png" /></p>
 <p>The files where: 
-<em> BuildV4.wasm.framework.unityweb
-</em> BuildV4.wasm.code.unityweb
+* BuildV4.wasm.framework.unityweb
+* BuildV4.wasm.code.unityweb
 * BuildV4.data.unityweb</p>
 <p>At the same time, by using the tool <strong>AssetStudioGUI</strong>, we found the data objects of the game: 
 <img alt="cheater_3" src="../images/cheater_3.png" /></p>
 <p>We started analyzing the downloaded files to see if we could get some useful information from there. We were able to list some objects/methods that were implemented, just by reading (in raw) the <strong>BuildV4.data.unityweb</strong> file: </p>
 <pre><code>^@p3^@Bezier3^@BezierTangent3^@Bezier1^@BezierTangent1^@knot^@ctrl1^@ctrl2^@ComputeSmoothControlPoints^@ComputeSmoothControlPointsLooped^@UnityVectorExtensions^@s0^@ClosestPointOnSegment^@ProjectOntoPlane^@AlmostZero^@SafeFromToRotation^@vA^@vB^@SlerpWithReferenceUp^@UnityQuaternionExtensions^@qA^@qB^@orient^@lookAtDir^@GetCameraRotationToTarget^@ApplyCameraRotation^@UnityRectExtensions^@Inflated^@78517443912BB49729313EC23065D9970ABC80E3^@Assembly-CSharp^@Assembly-CSharp.dll^@GameManager^@get_CurrentScore^@set_CurrentScore^@sceneIndex^@CleanMemory^@CleanResources^@UpdateScore^@player^@GameOver^@playButton^@finalScoreText^@currentScoreText^@_scoreManager^@txtUno^@txtDos^@m_Singleton^@m_CurrentScore^@backup^@CurrentScore^@ScenesNames^@START_MENU^@PLAY_SCENE^@GAME_OVER^@ParallaxEffect^@mainCamera^@parallaxEffectSpeed^@lengthSprite^@PlayerController^@IsInGround^@AddPoints^@platformLayerMask^@jumpForce^@moveSpeed^@motionX^@jump^@_rigidbody^@_circleCollider^@velocityZero^@_gameManager^@ScoreManager^@EnableScoreText^@DisableScoreText^@SetScoreText^@m_textMeshpro^@SpawnPlatforms^@CreateBlock^@blocks^@spaw
 </code></pre>
-
 <p>As you can see from there, <strong>ScoreManager</strong> was part of the list. Next to it had some itneresting names like <strong>DisableScoreText</strong>, <strong>SetScoreText</strong>, etc. These names sounded like method names, so our next test was try them. We opened a JS console of the game and tried these methods: 
 <img alt="cheater_4" src="../images/cheater_4.png" /></p>
 <p>Although it seemed  to work, it really didn't : 

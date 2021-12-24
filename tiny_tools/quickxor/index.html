@@ -42,8 +42,7 @@
 
     </script>
     <script src="../../js/base.js"></script>
-      <script src="../../search/require.js"></script>
-      <script src="../../search/search.js"></script> 
+      <script src="../../search/main.js"></script> 
 </head>
 
 <body>
@@ -59,7 +58,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -102,12 +100,11 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <h3 id="byte-by-byte-xoring">Byte by byte xoring</h3>
 <p>Let's suppose that we want to XOR a file of 2GB against a key of 2 bytes. </p>
 <p>If we were coding in Python or even in C we will do that byte by byte. For example: </p>
-<pre><code class="c">unsigned int i;
+<pre><code class="language-c">unsigned int i;
 for(i=0; i &lt; file_len; i++){
     result_buffer[i] = key_buffer[i%key_len] ^ file_buffer[i];
 }
 </code></pre>
-
 <p>If we compile a program that performs this (even with <strong>-O2</strong> GCC flag), the assembly code created will be:
 <img alt="basic_block_xor_c" src="../resources/quickxor/basic_block_xor.png" /></p>
 <p><strong>This was compiled with gcc version 9.2.1 20191102</strong></p>
@@ -118,7 +115,6 @@ for(i=0; i &lt; file_len; i++){
     mov xmm1, [ptr_file] ; Reading 16 bytes from the file
     pxor xmm1, xmm2 ; Xor 16 bytes at once.
 </code></pre>
-
 <p>But the question is.. How we build xmm2? 
 Let's see.. if we have a key of 2 bytes... and registers up to 16 bytes. We can make fit the key 8 times inside the register and then perform 16 XOR's in one instruction!
 At the very beginning, Quickxor will create a "super key": an XMM register with the maximum number of times that the key fixes inside it.
@@ -245,7 +241,6 @@ Let's use the same example as before: a file of size 22 bytes with a key of 9.</
     number_of_leftover_bytes -= number_of_bytes_to_xor_by_round
 }
 </code></pre>
-
 <p>Maybe somebody can spot the error very fast (also because in pseudo code or even in C may be easier). I can assure you that in the assembly code was not that easy.</p>
 <p>Let's apply our example to find the error. After the first round, the <strong>number_of_leftover_bytes</strong> will be 13 (22-9), meaning that the condition will be accomplish successfully and a second round of the cycle will be executed.
 However, the pointer to the file is just 13 bytes far from the end. When the first function of the cycle is performed, we will try to read 16 bytes and an invalid read will be executed (by 3 bytes in this case).</p>

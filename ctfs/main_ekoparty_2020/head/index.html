@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -108,7 +106,7 @@ Unfortunately, a 404 HTTP error was retrieved. Then we tried with <strong>dirbus
 <p>Cool! The <strong>.git</strong> directory was being leaked! 
 We started inspecting the different files of the directory manually, until we thougth that was better to download every file from it.  We found this awesome tool called <a href="https://github.com/internetwache/GitTools/blob/master/Dumper/gitdumper.sh">gitdumper</a>. We executed it and after a couple of second, we had all the content inside our machines. </p>
 <p>The first file that we found was the <strong>index.php</strong>. The first lines of it were:</p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 /*
         b374k shell 3.2.3
         Jayalah Indonesiaku
@@ -119,7 +117,6 @@ We started inspecting the different files of the directory manually, until we th
 $GLOBALS['pass'] = file_get_contents('../secret'); // sha1(md5(pass))
 [..]
 </code></pre>
-
 <p>It was defining the global parameter called <strong>pass</strong> with some fixed value from a file that wasn't readeable for us. After that line there were some strange lines. </p>
 <p>By inspecting the comments (at the top of the file) and some previous commits, we realized that this <strong>index.php</strong> was hosting a Web Shell called <strong>b374k</strong>. It was encoded so it wasn't easy to read it. </p>
 <p>We then inspected older commits and found that in the first version of this repo, the value of <strong>../secret</strong> was hardcoded:
@@ -127,7 +124,7 @@ $GLOBALS['pass'] = file_get_contents('../secret'); // sha1(md5(pass))
 However, this was the SHA1 of the MD5 of the real password. Nevertheless, we tried to use it as the password on the http://head.ctf.cap.tf:30000 screen, but it didn't work. </p>
 <p>In this same commit we found the webshell (shell.php) totally decoded, so we could perform a more straightforward analysis of it. 
 By doing this analysis and a careful eye of @jaccinelli, we finally found the function that was performing the authorization check:</p>
-<pre><code class="php">if(!function_exists('auth')){
+<pre><code class="language-php">if(!function_exists('auth')){
         function auth(){
                 if(isset($GLOBALS['pass']) &amp;&amp; (trim($GLOBALS['pass'])!='')){
                         $c = $_COOKIE;
@@ -145,7 +142,6 @@ By doing this analysis and a careful eye of @jaccinelli, we finally found the fu
             [..]
             die();
 </code></pre>
-
 <p>Seems that there are two ways of authentication. If we could successfully meet one of those conditions we’d be able to log in. 
 1. Using the correct pass. We only had the sha1 of the md5 of the correct pass, so it was impossible to retrieve it from there. 
 2. The second one was comparing the value of a cookie called pass against the value of $GLOBALS['pass']. But the value of global pass, as we saw before, was the hash of the hash of final password (the value that we already had). </p>

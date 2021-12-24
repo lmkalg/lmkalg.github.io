@@ -36,12 +36,12 @@
           ]},
           {title: "Solution", url: "#solution", children: [
               {title: "1st part: infernoCTF{.(?&lt;=H){21}.[a-z]", url: "#1st-part-infernoctfh21a-z" },
-              {title: "2nd part: (?&lt;=+a){1024}[a-z][a-j]", url: "#2nd-part-43a1024a-za-j" },
+              {title: "2nd part: (?&lt;=+a){1024}[a-z][a-j]", url: "#2nd-part-a1024a-za-j" },
               {title: "3rd part: (?&lt;!([a-u]|[w-z])(j|[a-h])).{2,64}", url: "#3rd-part-a-uw-zja-h264" },
               {title: "4th part: (?&lt;!\\S){255}n.{2}", url: "#4th-part-s255n2" },
               {title: "5th part: (?&lt;=\\s)g_fUn\\W", url: "#5th-part-sg_funw" },
               {title: "6th part: (?&lt;=[A-z])}", url: "#6th-part-a-z" },
-              {title: "7th part: (?&lt;=..{14})", url: "#7th-part-4614" },
+              {title: "7th part: (?&lt;=..{14})", url: "#7th-part-14" },
               {title: "8th part: (?&lt;=^.{33})", url: "#8th-part-33" },
           ]},
           {title: "Flag", url: "#flag", children: [
@@ -52,8 +52,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -69,7 +68,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -111,7 +109,6 @@ Here's a regex 4 u. Match it if you can...
 infernoCTF{.(?&lt;=H){21}.[a-z](?&lt;=\+a){1024}[a-z][a-j](?&lt;!([a-u]|[w-z])(j|[a-h])).{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}(?&lt;=\..{14})(?&lt;=^.{33})
 
 </code></pre>
-
 <p>Never did a challenge like this, so it was an interesting target.
 In order to match this regex,  I split it in part, otherwise it would have be a mess. </p>
 <p>I used the following pages to test the regex: 
@@ -121,7 +118,7 @@ In order to match this regex,  I split it in part, otherwise it would have be a 
 <p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.[a-z]
 <strong>Type:</strong> Positive look behind
 <strong>Matching string:</strong> infernoCTF{Hzz</p>
-<h2 id="2nd-part-43a1024a-za-j">2nd part: (?&lt;=+a){1024}[a-z][a-j]</h2>
+<h2 id="2nd-part-a1024a-za-j">2nd part: (?&lt;=+a){1024}[a-z][a-j]</h2>
 <p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z][a-j]
 <strong>Type:</strong> Positive look behind
 <strong>Matching string:</strong> infernoCTF{H+azj</p>
@@ -165,7 +162,7 @@ In order to match this regex,  I split it in part, otherwise it would have be a 
 </ul>
 <p><strong>At this point, just to make a little more sense, I changed, to spaces</strong>:
 infernoCTF{H+avi   n  g_fUn^}</p>
-<h2 id="7th-part-4614">7th part: (?&lt;=..{14})</h2>
+<h2 id="7th-part-14">7th part: (?&lt;=..{14})</h2>
 <p><strong>Total:</strong> infernoCTF{.(?&lt;=H){21}.<a href="?&lt;=+a">a-z</a>{1024}[a-z]<a href="?&lt;!([a-u]|[w-z])(j|[a-h])">a-j</a>.{2,64}(?&lt;!\S){255}n.{2}(?&lt;=\s)g_fUn\W(?&lt;=[A-z])}(?&lt;=..{14})
 <strong>Type:</strong> Positive look behind
 <strong>Matching string:</strong> infernoCTF{H+avi      .    n  g_fUn^}</p>
@@ -184,7 +181,6 @@ infernoCTF{H+avi   n  g_fUn^}</p>
 <h1 id="flag">Flag</h1>
 <pre><code>infernoCTF{H+avi  .    n  g_fUn^}
 </code></pre>
-
 <h1 id="kudos">Kudos</h1>
 <p>To <a href="https://twitter.com/NicolasRaus">@NicolasRaus</a> who worked together with me to develop this one.</p>
 

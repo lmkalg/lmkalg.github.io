@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -98,7 +96,7 @@ Unfortunately, by the time I’m writing this writeup, both repositories involve
 Besides that, inside the directory I found a hidden folder called <strong>.github</strong>. After searching for a while I found that this is related with <a href="https://docs.github.com/en/free-pro-team@latest/actions">Github Actions</a>. Inside this folder there were two files: A config file (.yaml) and a Python file. </p>
 <p>After reading the documentation, the names of both files (issue-bouncer.(yaml|py)) and the content of these files I undertood that the Python script was being executed each time a new issue was created in the repository. </p>
 <p>The config file had some key thing to understand what was happening.</p>
-<pre><code class="yaml">name: Bounce issues from public repo to private repo
+<pre><code class="language-yaml">name: Bounce issues from public repo to private repo
 [..]
 env:
     [..]
@@ -108,9 +106,8 @@ run:
     [..]
     python3 .github/workflows/issue-bouncer.py
 </code></pre>
-
 <p>The Python script had the following interesting lines: </p>
-<pre><code class="python"> # pull our repo access
+<pre><code class="language-python"> # pull our repo access
 src_repo = Github(getenv('SRC_REPO_TOKEN')).get_repo(getenv('GITHUB_REPOSITORY'))
 dst_repo = Github(getenv('DST_REPO_TOKEN')).get_repo(getenv('DST_REPO')) # bounce to ekoparty-internal
 
@@ -127,13 +124,11 @@ dst_repo.create_issue(title=src_issue.title, body=src_issue.body, labels=[dst_re
 # update the source issue title and make contents private
 src_issue.edit(title=&quot;This issue has been filed with staff internal repo! Thanks!&quot;, body='', state='closed')
 </code></pre>
-
 <p>As can be infered from both files, each time a new issue in the <strong>ekolabs</strong> appeared, it was automatically bounced to another (private) repo called <strong>ekoparty-internal</strong>. 
 From the YAML file we can understand that the <strong>token</strong> in order to access that private repo is something readable only for the server that is running. So we couldn't clone that repo. 
 But, we had a private SSH key that we didn't use yet. So I tried to download that repo using the private key. </p>
-<pre><code class="sh">$&gt; ssh-agent bash -c 'ssh-add id_rsa; git clone git@github.com:ekoparty2020/ekoparty-internal.git
+<pre><code class="language-sh">$&gt; ssh-agent bash -c 'ssh-add id_rsa; git clone git@github.com:ekoparty2020/ekoparty-internal.git
 </code></pre>
-
 <p>and it worked!! The repo had a README, cotaining the flag: </p>
 <pre><code># EkoParty 2020 issue tracker
 

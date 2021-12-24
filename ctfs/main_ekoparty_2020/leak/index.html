@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -98,21 +96,19 @@ After doing a clone I began to analyze the repo. </p>
 <p>I started the anlysis by inspecting the commits and its messages, by executing a <strong>git log</strong>:
 <img alt="leak1" src="../images/leak_1.png" /></p>
 <p>The message of commit c21... seemed to be interesting so I executed a diff against the previous one: </p>
-<pre><code class="sh">$&gt;git diff fd5c9927bb9f5ee3e4c521def43d3033ae83b825 c21dbf5185a4dbdb5b2bd2f3d1d3b266c3a2271e
+<pre><code class="language-sh">$&gt;git diff fd5c9927bb9f5ee3e4c521def43d3033ae83b825 c21dbf5185a4dbdb5b2bd2f3d1d3b266c3a2271e
 </code></pre>
-
 <p>The answer was: 
 <img alt="leak2" src="../images/leak_2.png" /></p>
 <p>Nice! Seemes that a ssh private key was removed. I tried to recover it: </p>
-<pre><code class="sh">$&gt; git checkout fd5c9927bb9f5ee3e4c521def43d3033ae83b825
+<pre><code class="language-sh">$&gt; git checkout fd5c9927bb9f5ee3e4c521def43d3033ae83b825
 $&gt; cd .ssh/
 $&gt; head -n 3 id_rsa
 $&gt; cat id_rsa.pub 
 </code></pre>
-
 <p><img alt="leak3" src="../images/leak_3.png" /></p>
 <p>That public key had something weird. Usually the last part of it is just a reference (optional) to the user@host where the private key lives. However, that host seemed weird.  In fact, seems to be base64 encoded.</p>
-<pre><code class="sh">$&gt; echo RUtPezc0NGFkN2ZlOGU2Y2U1ZTg4NWFkMjRlZWYyNDNiMWZkMTFkMGZiN2V9 | base64 -d
+<pre><code class="language-sh">$&gt; echo RUtPezc0NGFkN2ZlOGU2Y2U1ZTg4NWFkMjRlZWYyNDNiMWZkMTFkMGZiN2V9 | base64 -d
 EKO{744ad7fe8e6ce5e885ad24eef243b1fd11d0fb7e}
 </code></pre>
 

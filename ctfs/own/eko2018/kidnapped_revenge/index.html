@@ -43,8 +43,7 @@
 
     </script>
     <script src="../../../../js/base.js"></script>
-      <script src="../../../../search/require.js"></script>
-      <script src="../../../../search/search.js"></script> 
+      <script src="../../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -60,7 +59,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -105,9 +103,8 @@ Gracias</p>
 <h2 id="parte-1-desencriptando-files">Parte 1: Desencriptando files</h2>
 <p>El challenge simplemente provee una imagen de un disco. 
 Por lo tanto, montemos esta imagen: </p>
-<pre><code class="bash">sudo mount -o rw file.img /mnt/challenge
+<pre><code class="language-bash">sudo mount -o rw file.img /mnt/challenge
 </code></pre>
-
 <p>Ejecutemos un <strong>ls -R</strong> para ver que files interesantes tenemos:</p>
 <p><img alt="ls menos r" src="../resources/ls_menor_r.png" /></p>
 <p>Parece ser un home directory de alguna distribución de Linux. Además, de las carpetas por defecto, parece ser que sólo 3 files son interesantes:</p>
@@ -131,7 +128,6 @@ Mucha suerte..
 Ah, casi me olvidaba, te volví a modificar un poco tu tarea asique.. vas a tener que arreglarla otra vez.. 
 Saludos
 </code></pre>
-
 <p>Lo único interesante acá parece ser la frase: <strong>"Hay veces, que romper es mucho más dificil que aprender a jugar"</strong>.</p>
 <p>Igulamente por ahora, no parece ser útil. </p>
 <p>Usando el comando <strong>ls</strong>, no vamos a listar los archivos ocultos. Si usamos el flag <strong>"-a"</strong>  vamos a encontrar en el home, un file bastante interesante, el <strong>bash_history</strong> con el siguiente contenido:</p>
@@ -162,7 +158,6 @@ cd ~
 rm .bash*
 logout
 </code></pre>
-
 <p>Por lo que vemos, el atacante:</p>
 <ol>
 <li>Trató de loguearse con algunos usuarios.</li>
@@ -180,30 +175,27 @@ logout
 <p>Una de las posibilidades acá seria tratar de bruteforcear la password... Pero en general, al menos desde mi punto de vista, yo haría esto cuando se me acaban las opciones. </p>
 <p>En este caso, podemos ver que se borraron varios archivos. Por lo tanto, podríamos usar alguna suite de forensia con el objetivo de recuperar los files eliminados, como por ejemplo, <strong>photorec</strong>. </p>
 <p>Con photorec, se puede recuperar al menos un archivo. Ese archivo, parece ser el <strong>.bashrc</strong> del usuario, y entre sus líneas, tiene lo siguiente:</p>
-<pre><code class="bash"># enable some nice features
+<pre><code class="language-bash"># enable some nice features
 openssl(){
     ba=$4
     /usr/bin/openssl $1 $2 $3 $4 $5 $6 -k $(for i in {1..100}; do echo -n ${#ba}; done)
 }
 </code></pre>
-
 <p>Esto quiere decir que, basicamente, el atacante creó un alias con el mismo nombre que el comando <strong>openssl</strong>, redefiniendo su acción. En resumen, lo que esta haciendo eso, es agregar la password de encripción con el flag <strong>"-k"</strong> cada vez que se llama al comando <strong>openssl</strong>. Dicha password es la longitud del nombre del file pasado por parámetro, repetido 100 veces. La longitud del string <strong>play_for_the_key</strong> es 16 y de <strong>tarea_secuestrada.asm.zip</strong> es 25. Por lo tanto, los siguientes comandos, vamos a poder desencriptar ambos files:</p>
-<pre><code class="bash">/usr/bin/openssl enc -d -aes-256-cbc -in tarea_secuestrada.asm.zip.enc -out tarea_secuestrada.asm.zip -k 25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525
+<pre><code class="language-bash">/usr/bin/openssl enc -d -aes-256-cbc -in tarea_secuestrada.asm.zip.enc -out tarea_secuestrada.asm.zip -k 25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525
 
 /usr/bin/openssl enc -d -aes-256-cbc -in play_for_the_key.enc -out play_for_the_key -k 16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616
 </code></pre>
-
 <p><em>Tener que la salida de estos comandos debería ser almacenada afuera del disco, ya que sólo tiene 15 MB</em></p>
 <h2 id="parte-2-jugar-a-veces-es-mas-facil">Parte 2: Jugar, a veces es más facil</h2>
 <p>En este momento tenemos 2 files imporatantes:
-<em> <strong>play_for_the_key</strong>: Un binario de 32 bits. Que cuando lo ejecutamos parece que nos pide respuestas a unas "preguntas". 
-</em> <strong>tarea_secuestrada.zip</strong>: Un archivo ZIP con password. </p>
+* <strong>play_for_the_key</strong>: Un binario de 32 bits. Que cuando lo ejecutamos parece que nos pide respuestas a unas "preguntas". 
+* <strong>tarea_secuestrada.zip</strong>: Un archivo ZIP con password. </p>
 <p>En este momento uno podría tratar de bruteforcear la password del ZIP quizás usando JTR o Hashcat o cualquier otra tool para crackear password de un ZIP. Pero, dado que existe un binario con un nombre bastante claro, se puede intuir que el camino al menos lógico, sería tratar de conseguir la key usando dicho binario. </p>
 <h3 id="play-for-the-key">Play for the key</h3>
 <p>Cuando ejecutamos el binario, el siguiente mensaje aparece:</p>
 <pre><code>Ingresa la respuesta número 1:
 </code></pre>
-
 <p>A esta altura no tenemos ni idea que significa esto. Si empezamos a probar y fallamos, el mensaje <strong>"Nop!"</strong> se imprimirá en la pantalla. En cambio, si ponemos la respuesta correcta, nos pedirá la respuesta a la siguiente pregunta:</p>
 <p><img alt="play for the key" src="../resources/play_for_the_key.png" /></p>
 <p>Pero ¿Cómo sabemos cuantas pregunta son? ¿Cuál es la repuesta correcta? </p>
@@ -232,7 +224,7 @@ openssl(){
 <p>Pero ¿Qué tienen de común estos números? <strong>SON PRIMOS!!</strong></p>
 <p>Todavía no sabemos qué cantidad de preguntas hay, pero igualmente, podemos hacer un script que imprima un contador y que cada vez que se cruza con un número primo, vuelva a 1. Dado que no sabemos la cantidad, podemos ir probando hasta que la encontremos. Yo arranqué con 15, y faltaban mas. Mi siguiente paso fue probar con 1000, y funcionó. La cantidad de preguntas finalmente eran 100. </p>
 <h4 id="solucionador">Solucionador</h4>
-<pre><code class="python">primos = []
+<pre><code class="language-python">primos = []
 contador = 1
 numero_de_pregunta = 1
 posible_numero_de_preguntas = 1000
@@ -244,7 +236,6 @@ for numero_de_pregunta in xrange(1,posible_numero_de_preguntas):
                 contador = 1
                 primos.append(numero_de_pregunta)
 </code></pre>
-
 <h4 id="intento-con-15-primos">Intento con 15 primos</h4>
 <p><img alt="solucionador 15" src="../resources/solucionador_15_pregs.png" /></p>
 <h4 id="intento-con-1000-primos">Intento con 1000 primos</h4>
@@ -253,7 +244,7 @@ for numero_de_pregunta in xrange(1,posible_numero_de_preguntas):
 <h2 id="parte-3-programacion-en-assembler">Parte 3: Programación en assembler</h2>
 <p>La última parte del challenge implica tratar de entender qué hizo el atacante (qué modificó) para poder volver hacer que funcione otra vez. </p>
 <p>El file original contiene:</p>
-<pre><code class="nasm"> nasm -f elf64 simd.asm; ld -o simd simd.o
+<pre><code class="language-nasm"> nasm -f elf64 simd.asm; ld -o simd simd.o
 section     .text
 global      _start                              
 
@@ -323,11 +314,10 @@ to_understand_how_it_works. dq 0x5078dd0e61071ff0, 0x5a9adf0f28e0206b
 Anyways_I_trust_you... dq 0x1715ABADFACEBABE
 Whats_wrong_in_this_code? dq 0x3A7ABEEF08C0FFEE 
 </code></pre>
-
 <p>Lo más imporante acá es entender qué está haciendo este código, al menos una idea a alto nivel para después ahondar en cada detalle. 
 Dividamos el código en partes:</p>
 <h4 id="analisis-de-codigo-parte-1">Análisis de código - Parte 1</h4>
-<pre><code class="nasm">
+<pre><code class="language-nasm">
     movdqu  xmm1, [Parallel_processing]
     movdqu  xmm3, [is_much_faster...You_know?]
     movdqu  xmm5, [but_sometimes_is_difficult]
@@ -342,10 +332,9 @@ Dividamos el código en partes:</p>
 
     pxor xmm9, xmm9
 </code></pre>
-
 <p>En esta parte, simplemente está copiando el contenido de las etiquetas a los registros XMM (16 bytes). Luego, hace una de cada una de ellos, dejando el mismo contenido de a pares. Es decir, <em>xmm1</em> tiene el mismo valor que <em>xmm2</em>, <em>xmm3</em> el mismo que <em>xmm4</em>, etc.. Por último, <em>xmm9</em> lo pone en 0. </p>
 <h4 id="analisis-de-codigo-parte-2">Análisis de código - Parte 2</h4>
-<pre><code class="nasm">punpckhwd xmm1, xmm9   
+<pre><code class="language-nasm">punpckhwd xmm1, xmm9   
 punpckhwd xmm2, xmm9   
 punpcklwd xmm3, xmm9   
 punpckhwd xmm4, xmm9   
@@ -356,10 +345,9 @@ punpckhwd xmm8, xmm9
 punpcklwd xmm10, xmm9
 punpckhwd xmm9 ,xmm11
 </code></pre>
-
 <p>En esta segunda parte, se puede observar dos instrucciones distintas:
-<em> <strong>punpckhwd</strong>
-</em> <strong>punpcklwd</strong></p>
+* <strong>punpckhwd</strong>
+* <strong>punpcklwd</strong></p>
 <p>Éstas, son parte de un conjunto de instrucciones (SSE) usados para procesamiento paralelo. 
 Googleando un poco, se puede encontrar que la función <em>punpckhwd</em> divide los registros, tanto fuente como destino, en words (2 bytes) (por eso la ante última letra, <em>w</em>). Toma las words que están en la parte high (por eso la letra <em>h</em> antes de la <em>w</em>) de ambos registros, y los intercala. </p>
 <p>Lo imporante de esta parte, no es tanto entrar en detalle de cómo es que se intercalan estrictamente, sino más que nada entender que: </p>
@@ -371,7 +359,7 @@ Googleando un poco, se puede encontrar que la función <em>punpckhwd</em> divide
 <p>Si recordamos lo que se hizo en la primera parte, había pares de registros <strong>xmm</strong> que tenian el mismo valor. Si bien vemos casos en la parte 2, donde se está unpackeando la parte high y low de un mismo valor de registros (por ejemplo, para <strong>xmm3</strong> y <strong>xmm4</strong>), también vemos casos donde se hace dos veces la parte high (<strong>xmm1</strong> y <strong>xmm2</strong>). Raro..</p>
 <p>Además, vemos que la última intrucción, parece unpackear al revés, es decir, usando el <strong>xmm9</strong> como registro fuente y no como destino. Otra cosa para anotar.</p>
 <h4 id="analisis-de-codigo-parte-3">Análisis de código - Parte 3</h4>
-<pre><code class="nasm">psubw xmm1, xmm10
+<pre><code class="language-nasm">psubw xmm1, xmm10
 psubw xmm2, xmm11
 psubw xmm3, xmm10
 psubw xmm4, xmm11
@@ -380,29 +368,26 @@ psubw xmm6, xmm11
 psubw xmm7, xmm10
 psubw xmm8, xmm11
 </code></pre>
-
 <p>Otra instrucción del mismo set de procesamiento paralelo. En este caso esta instrucción hace una resta word a word de cada registro y almacena el resultado en el registro destino. </p>
 <p>Obsevado este pedazo de código, se puede intuir que ni <strong>xmm11</strong> ni <strong>xmm10</strong> son usados dos veces con el mismo par de registros. Es decir, todo par de registros usa una vez <strong>xmm10</strong> y una vez <strong>xmm11</strong>. 
 De hecho, por el orden y lo números de regitros, podríamos llegar a pensar que <strong>xmm10</strong> es siempre usado para la parte <strong>low</strong> de los pares de registros y <strong>xmm11</strong> para la parte <strong>high</strong>.</p>
 <h4 id="analisis-de-codigo-parte-4">Análisis de código - Parte 4</h4>
-<pre><code class="nasm">packuswb xmm1, xmm2 
+<pre><code class="language-nasm">packuswb xmm1, xmm2 
 packuswb xmm3, xmm4 
 packuswb xmm5, xmm6 
 packuswb xmm7, xmm8 
 </code></pre>
-
 <p>Por último, en esta parte, se hace el packeo otra vez para volver a la "normalidad". Cada par de registros, se packean juntos. 
 Sin embargo, dicho packeo, se hace de word a byte (por eso <strong>wb</strong> a lo último) cuando el unpackeo se hizo de word a double word... raro.. </p>
 <h4 id="analisis-de-codigo-parte-5">Análisis de código - Parte 5</h4>
-<pre><code class="nasm">movdqu [Parallel_processing], xmm1
+<pre><code class="language-nasm">movdqu [Parallel_processing], xmm1
 movdqu [is_much_faster...You_know?], xmm3
 movdqu [but_sometimes_is_difficult], xmm5
 movdqu [to_understand_how_it_works.], xmm7
 </code></pre>
-
 <p>Se escribe dichas posiciones de memoria el valor que tienen algunos (los representantes de cada par?) de los <strong>xmm</strong> después de hacer las operaciones. </p>
 <h4 id="analisis-de-codigo-parte-6">Análisis de código - Parte 6</h4>
-<pre><code class="nasm">mov     ecx, Parallel_processing  
+<pre><code class="language-nasm">mov     ecx, Parallel_processing  
 mov     edx, 0x40
 mov     ebx,1                               
 mov     eax,4                               
@@ -411,7 +396,6 @@ int     0x80
 mov     eax,1                               
 int     0x80                                
 </code></pre>
-
 <p>Finalmente, imprime por pantalla los 64 bytes que tenga la posición de memoria apuntada por la etiqueta <strong>Parallel_processing</strong>. </p>
 <h4 id="analisis-de-codigo-resumen">Análisis de código - Resumen</h4>
 <p>Hay al menos 3 cosas que parecen raras: </p>
@@ -424,7 +408,7 @@ int     0x80
 <ol>
 <li>Cada par deberia unpackear la parte low y la parte high. Cómo saber cual debería, podríamos probar. Sin embargo, por cómo está escrito el código, vamos a optar por unpackear la parte low con el registro de numero más bajo entre los pares (es decir, entre <strong>xmm1</strong> y <strong>xmm2</strong>, usaremos <strong>xmm1</strong>) y el de número más alto para la parte high:</li>
 </ol>
-<pre><code class="nasm">punpcklwd xmm1, xmm9   
+<pre><code class="language-nasm">punpcklwd xmm1, xmm9   
 punpckhwd xmm2, xmm9   
 punpcklwd xmm3, xmm9   
 punpckhwd xmm4, xmm9   
@@ -435,24 +419,21 @@ punpckhwd xmm8, xmm9
 punpcklwd xmm10, xmm9
 punpckhwd xmm11, xmm9
 </code></pre>
-
 <ol>
 <li><strong>xmm9</strong> no tiene mucho sentido ponerlo adelante, además de que parece inconsistente con todas las otras, por lo tanto, cambiemos el orden. y dejemos que la instrucción sea: </li>
 </ol>
-<pre><code class="nasm">punpckhwd xmm11, xmm9
+<pre><code class="language-nasm">punpckhwd xmm11, xmm9
 </code></pre>
-
 <ol>
 <li>Probemos. Packemos de double word a word, usando la instrucción <strong>packusdw</strong>:</li>
 </ol>
-<pre><code class="nasm">packusdw xmm1, xmm2 
+<pre><code class="language-nasm">packusdw xmm1, xmm2 
 packusdw xmm3, xmm4 
 packusdw xmm5, xmm6 
 packusdw xmm7, xmm8 
 </code></pre>
-
 <p>Es decir, que finalmente, el nuevo código sería: </p>
-<pre><code class="nasm">; nasm -f elf64 simd.asm; ld -o simd simd.o
+<pre><code class="language-nasm">; nasm -f elf64 simd.asm; ld -o simd simd.o
 section     .text
 global      _start                              
 
@@ -524,7 +505,6 @@ to_understand_how_it_works. dq 0x5078dd0e61071ff0, 0x5a9adf0f28e0206b
 Anyways_I_trust_you... dq 0x1715ABADFACEBABE
 Whats_wrong_in_this_code? dq 0x3A7ABEEF08C0FFEE 
 </code></pre>
-
 <p>Si compilamos este programa y lo corremos, obtendremos el flag:</p>
 <pre><code>The flag is:ona{0db234f102901d6c789c2023A11600022e9fa1c9}
 </code></pre>

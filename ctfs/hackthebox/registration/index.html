@@ -39,8 +39,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
     
     
       
-      
     
 
   <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
@@ -73,10 +71,10 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
     </div>
     
     <div class="wm-article-nav">
-      <a href="../../.." class="btn btn-xs btn-default pull-left">
+      <a href="../../damn-vulnerable-defi/naive_receiver/" class="btn btn-xs btn-default pull-left">
         <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        Previous</a><a href="../../.." class="btn btn-xs btn-link">
-        Home
+        Previous</a><a href="../../damn-vulnerable-defi/naive_receiver/" class="btn btn-xs btn-link">
+        Naive Receiver
       </a>
     </div>
     
@@ -87,7 +85,7 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
     <h1 id="registration">Registration</h1>
 <p>In order to join to the platform, you should solve the first challenge.</p>
 <p>Once in the <strong>JOIN</strong> section, open we are asked to prompt a code. We don't have any code yet, so the first step is to look into the page source to find something. After a digging some time, you will find a link to a JS script: <strong>/js/inviteapi.min.js</strong>. After openning and formating it:</p>
-<pre><code class="javascript">
+<pre><code class="language-javascript">
 eval(
     function  (p,a,c,k,e,d){
         e = function(c){return c.toString(36)};
@@ -116,12 +114,11 @@ eval(
 )
 
 </code></pre>
-
 <p>So basically, it's a JS functiont that it's being called with some specific parameters.</p>
 <p>It's not necessary to fully understand the whole thing, we can just use the Chrome/Firefox JS console and make use of this code. Nevertheless, if you copy &amp; paste it, it won't work due to a name for the function is missing. What I did was just to choose some name, copy only the part of the function definition an afterwards call it with the specific parameters:</p>
 <p><img alt="script result" src="../images/script_result.png" /></p>
 <p>The answer gathered is again JS code:</p>
-<pre><code class="javascript">
+<pre><code class="language-javascript">
 function verifyInviteCode(code){
     var formData = {&quot;code&quot;:code};
     $.ajax({
@@ -152,7 +149,6 @@ function makeInviteCode(){
 }
 
 </code></pre>
-
 <p>This time seems to show us how the <strong>InviteCode</strong> related functions are invoked... Time to use <strong>burp</strong>:</p>
 <p>Issuing the following POST we will receive an answer with some information encoded: </p>
 <pre><code>
@@ -162,12 +158,10 @@ Connection: close
 Accept: */*
 
 </code></pre>
-
 <pre><code>
 {&quot;success&quot;:1,&quot;data&quot;:{&quot;data&quot;:&quot;SW4gb3JkZXIgdG8gZ2VuZXJhdGUgdGhlIGludml0ZSBjb2RlLCBtYWtlIGEgUE9TVCByZXF1ZXN0IHRvIC9hcGkvaW52aXRlL2dlbmVyYXRl&quot;,&quot;enctype&quot;:&quot;BASE64&quot;},&quot;0&quot;:200}
 
 </code></pre>
-
 <p>After decoding the value inside <strong>data</strong> which is encoded with the encoding mentioned in <strong>enctype</strong>, you'll get the a message saying:
 <strong>In order to generate the invite code, make a POST request to /api/invite/generate</strong></p>
 <p>So, let folow their order:</p>
@@ -178,12 +172,10 @@ Connection: close
 Accept: */*
 
 </code></pre>
-
 <pre><code>
 {&quot;success&quot;:1,&quot;data&quot;:{&quot;code&quot;:&quot;WElLQVktWFlFWk8tTkpaTEotVVNFQVMtWkJBTE4=&quot;,&quot;format&quot;:&quot;encoded&quot;},&quot;0&quot;:200}
 
 </code></pre>
-
 <p>And here it is.. Our <strong>code</strong> is encoded in base64. Once decoded you'll get your code:</p>
 <p><strong>XIKAY-XYEZO-NJZLJ-USEAS-ZBALN</strong> (in my case).</p>
 <h2 id="disclaimer">Disclaimer</h2>

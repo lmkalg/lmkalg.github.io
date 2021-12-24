@@ -11,7 +11,7 @@
     
     <link rel="shortcut icon" href="../../../img/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <title>Bashed - lmkalg's blog</title>
+    <title>Challenge Data - lmkalg's blog</title>
     <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
     <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
     <link href="../../../css/base.css" rel="stylesheet">
@@ -32,9 +32,9 @@
       var is_top_frame = false;
         
         var pageToc = [
-          {title: "Bashed", url: "#_top", children: [
-              {title: "User", url: "#user" },
-              {title: "Root", url: "#root" },
+          {title: "Challenge Data", url: "#_top", children: [
+          ]},
+          {title: "Solution", url: "#solution", children: [
           ]},
         ];
 
@@ -55,50 +55,20 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
     
 
     
-    
-      
-    
 
-  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
-    
-    <div class="wm-article-nav pull-right">
-      <a href="../valentine/" class="btn btn-xs btn-default pull-right">
-        Next
-        <i class="fa fa-chevron-right" aria-hidden="true"></i>
-      </a>
-      <a href="../valentine/" class="btn btn-xs btn-link">
-        Valentine
-      </a>
-    </div>
-    
-    <div class="wm-article-nav">
-      <a href="../registration/" class="btn btn-xs btn-default pull-left">
-        <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        Previous</a><a href="../registration/" class="btn btn-xs btn-link">
-        Initial registration to HTB
-      </a>
-    </div>
-    
-  </div>
-
-    
-
-    <h1 id="bashed">Bashed</h1>
-<h2 id="user">User</h2>
-<p>This machine was pretty easy.
-First of all I used <strong>dirb</strong> to start listing some common directories.</p>
-<pre><code class="language-bash">
-dirb http://10.10.10.68 common.txt
-
+    <h1 id="challenge-data">Challenge Data</h1>
+<ul>
+<li><strong>Name</strong>: Faraday</li>
+<li><strong>Category</strong>: Sponsors</li>
+<li><strong>Points</strong>: 440/500</li>
+<li><strong>Worked together with</strong>: @sebarodriguez</li>
+</ul>
+<h1 id="solution">Solution</h1>
+<p>Unfortunately, this writeup will not have too much info due to the server went down before I could start writing this ! </p>
+<p>@seba found that in the HTML code of the response, there was a comment saying something like</p>
+<pre><code>at /dump I store by bakcup code
 </code></pre>
-<p>Some directories were found:</p>
-<p><img alt="dirb directories" src="../images/bashed/dirb.png" /></p>
-<p>The <strong>dev</strong> seemed to be the most interesting one, therefore I started from there:</p>
-<p><img alt="dev index" src="../images/bashed/dev_index.png" /></p>
-<p>And once inside <strong>phpbash.php</strong>:</p>
-<p><img alt="dev index" src="../images/bashed/user_hash.png" /></p>
-<h2 id="root">Root</h2>
-<p><strong>TBD</strong></p>
+<p>We went to /dump and succefully downloaded the source code of the APP that was running in the werbserver. </p>
 
   <br>
 </div>

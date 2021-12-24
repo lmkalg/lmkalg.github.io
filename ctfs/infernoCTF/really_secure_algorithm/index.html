@@ -42,8 +42,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -59,7 +58,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -101,12 +99,11 @@ enc_flag = ['0x2135d36aa0c278', '0x3e8f43212dafd7', '0x7a240c1672358', '0x37677c
 
 Help me find out the secret to decrypt the flag
 </code></pre>
-
 <p>Quickly, we can understand that <strong>N</strong> (which is the result of <strong>P</strong> and <strong>Q</strong>) is extremelly small.
 With the dumbest python factorization script, you can factorize it and get the value of both primes.</p>
 <p>Once factorized:
-<em> <strong>P</strong> = 150758089
-</em> <strong>Q</strong> = 170426657</p>
+* <strong>P</strong> = 150758089
+* <strong>Q</strong> = 170426657</p>
 <p>(or the other way around, is the same)</p>
 <p>Once we have the primes, we have all to decrypt the message.
 I used <a href="https://github.com/Ganapati/RsaCtfTool">RsaCtfTool</a> to make things even quicker:</p>
@@ -120,7 +117,6 @@ python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0xb0e1c482daf
 python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x59c069723a4e4b
 python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x8cec977d4159
 </code></pre>
-
 <p>Answer was:</p>
 <pre><code>[+] Clear text : infe
 [+] Clear text : rnoC
@@ -131,7 +127,6 @@ python RsaCtfTool.py -p 150758089 -q 170426657 -e 65537 --uncipher 0x8cec977d415
 [+] Clear text : SmAl
 [+] Clear text : l}
 </code></pre>
-
 <h1 id="flag">Flag</h1>
 <pre><code>infernoCTF{RSA_k3yS_t00_SmAll}
 </code></pre>

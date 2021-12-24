@@ -40,8 +40,7 @@
 
     </script>
     <script src="../../../js/base.js"></script>
-      <script src="../../../search/require.js"></script>
-      <script src="../../../search/search.js"></script> 
+      <script src="../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -57,7 +56,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -98,7 +96,7 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 Again, the directory <strong>.github</strong> with some workflows on it was present. 
 This time the files were named <strong>issue-notify.(yaml|py)</strong>.</p>
 <p>The <strong>.yaml</strong> file had nothing interesting, but the Python script did: </p>
-<pre><code class="python">def issue_notify(title, body, repo):
+<pre><code class="language-python">def issue_notify(title, body, repo):
     # just echo the body into the report repo at /tmp and our scraper script will pick them up and mail them out to staff@
     notify_id = str(uuid.uuid4())
     # only notify on very important issues to reduce spam!
@@ -110,12 +108,11 @@ def run():
     issue_notify(getenv('ISSUE_TITLE'), getenv('ISSUE_BODY'), Github(getenv('REPORT_TOKEN')))
     return
 </code></pre>
-
 <p>Each time a new issue (bounced from the public repo) arrived, the <strong>run()</strong> function was executed. 
 As you can see there is clear Code Injection in the <strong>issue_notify</strong> function. The command executed inside <strong>os.sytem</strong> takes into account <strong>body</strong> variable which is filled with the content of the body of the issue submitted. Furthermore, in order to exceute that line, the tilte of the issue should be the string "very important". </p>
 <p>I went to http:/github.com/ekoparty2020/ekolabs and started submitting issues with: 
-<em> <strong>Title</strong>: very important
-</em> <strong>Body</strong>: asd" ; #COMMAND_TO_EXECUTE; echo "asd</p>
+* <strong>Title</strong>: very important
+* <strong>Body</strong>: asd" ; #COMMAND_TO_EXECUTE; echo "asd</p>
 <p>I used <a href="https://pipedream.com/">Pipedream</a> in order to check if was receiving any kind of connection from the server. These were my attempts:</p>
 <ol>
 <li>

@@ -42,8 +42,7 @@
 
     </script>
     <script src="../../../../js/base.js"></script>
-      <script src="../../../../search/require.js"></script>
-      <script src="../../../../search/search.js"></script> 
+      <script src="../../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -59,7 +58,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -109,7 +107,7 @@ Good luck!</p>
 <h2 id="file">File</h2>
 <p>These are the files that were provided by MonkeyBananas:</p>
 <p>Server pseudocode</p>
-<pre><code class="python">#!/usr/bin/env python3
+<pre><code class="language-python">#!/usr/bin/env python3
 import urllib
 # NOOO! Alguien eliminó esto!
 import %%%%%% as remolino
@@ -160,7 +158,6 @@ server.serve_for_ever()
 
 
 </code></pre>
-
 <p>Request</p>
 <pre><code>POST /bombing HTTP/1.1
 Host: www.dibombjasbinplanted.com
@@ -173,7 +170,6 @@ Accept: text/html,application/xhtml
 bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway
 
 </code></pre>
-
 <h2 id="solution">Solution</h2>
 <p>We received two files an HTTP request and the source code of the "interruptor" to defuse the bomb. </p>
 <p>The HTTP request shows how this hacker team did the activation of the bomb. They basically sent a POST request to the host where this interruptor was hosted. The most important parts of it are: </p>
@@ -183,45 +179,39 @@ bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway
 </ul>
 <p>The body has a parameter called <strong>action</strong> which seems to be the one that really activates the bomb. </p>
 <p>Reading the pseudocode of the server, in particular the lines:</p>
-<pre><code class="python">if self.check_tag(tag, params):
+<pre><code class="language-python">if self.check_tag(tag, params):
     params = parse_params(urllib.parse.unquote(params))
     if params['action'] == 'activate':
             activate_bomb()
     elif params['action'] == 'defuse':
             defuse_bomb()
 </code></pre>
-
 <p>we can confirm, that the <strong>action=activate</strong> is the necessary parameter to activate the bomb. Therefore, if we manage to send <strong>action=defuse</strong> we would be able to defuse it!. </p>
 <p>However  our problem is the check function <strong>self.check_tag(tag, params)</strong>. This function is taking as input, the <strong>tag</strong> header the parameters sent in the body and performs the following action:</p>
-<pre><code class="python">def check_tag(self, tag, params):
+<pre><code class="language-python">def check_tag(self, tag, params):
     decoded_params = urllib.parse.unquote_to_bytes(params)
     return tag == remolino.new(self.mac_key+decoded_params).hexdigest()
 </code></pre>
-
 <p>First, it makes some url-decoding and then it compares the sent <strong>tag</strong> against the result of applying a function call <strong>remolino.new</strong> to the concatenation of a key and the sent (and decoded) parameters. Then it calculates the <strong>hexdigest</strong> of it, which indicates that this function is potentially related to some hashing algorithm. </p>
 <p>The key appended to the params, is partially known:</p>
-<pre><code class="python">self.mac_key = b&quot;Th1s1sS3cure4sH3ll&quot; + os.urandom(14)
+<pre><code class="language-python">self.mac_key = b&quot;Th1s1sS3cure4sH3ll&quot; + os.urandom(14)
 </code></pre>
-
 <p>but still there are 14 bytes (112 bits) that are random. So there's no chance we can bruteforce that. </p>
 <p><strong>remolino</strong> its a library but we cannot know which one, cause:</p>
-<pre><code class="python"># NOOO! Alguien eliminó esto!
+<pre><code class="language-python"># NOOO! Alguien eliminó esto!
 import %%%%%% as remolino
 </code></pre>
-
 <p>This is clearly the structure of a <a href="https://es.wikipedia.org/wiki/Message_authentication_code">MAC</a> (in fact the name <strong>self.mac_key</strong> it's a little spoiler). </p>
 <p>This means that if we want to send a message to the 'interruptor' we should also send the <strong>tag</strong> header with the value of applying the hash function to the parameters together with the key (that we don't have). Seems to be almost impossible. </p>
 <p>Let's try to guess which hashing algorithm they are using.
 From the example request, we can get the a valid <strong>tag</strong>: </p>
 <pre><code>d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b
 </code></pre>
-
 <p>This is the value of applying the hash function to "<strong>\&lt;key></strong>"+"<strong>bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway</strong>"</p>
 <p>Let's how long this hash digest is:</p>
-<pre><code class="python">len(&quot;d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b&quot;)
+<pre><code class="language-python">len(&quot;d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b&quot;)
 128
 </code></pre>
-
 <p>128 bytes as an output it's pretty long. I think that the most famous algorithm which it digest is of 128 bytes is sha-512. </p>
 <p>If you have a little background of crypto you may've already realize what you need to use here. If you lack of it, still, you may understand that you need to create a valid tag, but you need the MAC key for that, which seems to be impossible to retrieve. Unless there is another kind of attack to create a valid tag. </p>
 <p>The <a href="https://en.wikipedia.org/wiki/Length_extension_attack">length extension attack</a> is one of the most famous attacks known for hashes. It basically states that: </p>
@@ -247,19 +237,17 @@ The length extension attack leverages this and continues from the last "checkpoi
 <li>WHIRPOOL</li>
 </ul>
 <p>Well at this moment we can continue with both algorithms doing the tests, but remember that parts?:</p>
-<pre><code class="python">import %%%%%% as remolino
+<pre><code class="language-python">import %%%%%% as remolino
 ...
 return tag == remolino.new(self.mac_key+decoded_params).hexdigest()
 ...
 </code></pre>
-
 <p>"remolino" in spanish means "whirpool", so most probably the actual hash used is whirpool. </p>
 <p>For <strong>2.</strong> we would want to send something like <strong>action=defuse</strong>, but we can't just send the data we want, but we have to append it. </p>
 <p>However,  let's pay attention to the way the server reads the params:</p>
-<pre><code class="python">def parse_params(self, body):
+<pre><code class="language-python">def parse_params(self, body):
     return dict(param_value.split(&quot;=&quot;) for param_value in body.split(&quot;&amp;&quot;))
 </code></pre>
-
 <p>It basically creates a dictionary and updates it with each key value gathered from the body. This means that this way is vulnerable to HPP (Parameter Polution). Therefore we can add our parameter to the end part of the body and when the server process it first will assing the value <strong>activate</strong> to <strong>action</strong> but afterwards will overwrite this value with <strong>defuse</strong> and BINGO!</p>
 <p>Fortunately, we don't have to do all the forging (padding, etc) of the data we want to append. There are some tools that already exist and will make our life easier like <a href="https://github.com/iagox86/hash_extender.git">hash extender</a>. </p>
 <p>This tool will do all the job for us:</p>
@@ -270,18 +258,16 @@ return tag == remolino.new(self.mac_key+decoded_params).hexdigest()
 <li><strong>-f</strong> is the name of the algorithm we want to use</li>
 <li><strong>-l</strong> is the length of the secret</li>
 </ul>
-<pre><code class="bash">./hash_extender -d &quot;bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway&quot; -s d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b -a &quot;&amp;action=defuse&quot; -f whirlpool -l 32 
+<pre><code class="language-bash">./hash_extender -d &quot;bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway&quot; -s d293e656353386647bef31070414e85dee1b35d8e3a2237f330277b824679b9955c086247a148295ba9df68f763b31dded09475da0fd5cd5bfbed0a29562f06b -a &quot;&amp;action=defuse&quot; -f whirlpool -l 32 
 Type: whirlpool
 Secret length: 32
 New signature: f52a0a8b9899458985b7aad687763c5a4dd37d6ceebd49d131b92bd6416eba1781ffd31ba222d9a544d83a64f7c2b119262e58d576b5d645cae59d3dd352a09b
 New string: 626f6d62696e673d747275652662616e616e61733d6d697373696e6726616374696f6e3d6163746976617465266d6f6e6b6579733d6f6e74686577617980000000000000000000000000000000000000000000000000000000000000000002e826616374696f6e3d646566757365
 </code></pre>
-
 <p>We now have the new signature for our new body "bombing=true&amp;bananas=missing&amp;action=activate&amp;monkeys=ontheway&amp;action=defuse" which should be the way to defuse the bomb! </p>
 <p>If we get the sha1 of this output, we finally get the correct flag</p>
-<pre><code class="bash">ONA{dcc78fb1416748d7f8eeb001342856e492cbd877}
+<pre><code class="language-bash">ONA{dcc78fb1416748d7f8eeb001342856e492cbd877}
 </code></pre>
-
 <p><strong>DISCLAIMER:</strong> This challenge was expecting to just append "&amp;action=defuse". In a real scenario if you add even more data after like "&amp;action=defuse&amp;blabla=blabla", it would have worked anyways. </p>
 
   <br>

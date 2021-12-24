@@ -42,8 +42,7 @@
 
     </script>
     <script src="../../../../js/base.js"></script>
-      <script src="../../../../search/require.js"></script>
-      <script src="../../../../search/search.js"></script> 
+      <script src="../../../../search/main.js"></script> 
 </head>
 
 <body>
@@ -59,7 +58,6 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 
     
     
-      
       
     
 
@@ -118,20 +116,17 @@ The one I used was <a href="http://manpages.ubuntu.com/manpages/trusty/man1
 <img alt="" src="../resources/dtmfcheck.png" /></p>
 <p>Analyzing the output we will see that we have the numbers that were pressed (just afrter the "Detected" string). 
 With the following command line we can extract them without any space between them: </p>
-<pre><code class="bash">dtmfcheck audio_espia.wav | awk -F Detected '{print $2}' | cut -f1 -d '(' | tr -d &quot;\n&quot; | tr -d ' '
+<pre><code class="language-bash">dtmfcheck audio_espia.wav | awk -F Detected '{print $2}' | cut -f1 -d '(' | tr -d &quot;\n&quot; | tr -d ' '
 </code></pre>
-
 <p>Why we put it all of them together? Because the tool is capable of determing which keys were pressed but sometimes the pause between them may cause issues. For example: if the serie <strong>777777</strong> was dialed, it wouldn't be possible to distinguish between <strong>77</strong>,<strong>7777</strong> and <strong>777</strong>,<strong>777</strong> (which, as we are gonna see later, are different things).</p>
 <p>In order to solve that we should carefully listen again the audio and create insert the pauses manually where they are.</p>
 <p>Once this action is carried out, we end up with the following message: </p>
 <pre><code>8 44 33 7 2 7777 7777 9 666 777 3 444 7777 6 666 66 55 33 999 7777 2 777 33 222 666 666 555 444 333 999 666 88 4 444 888 33 8 44 33 6 22 2 66 2 66 2 7777
 </code></pre>
-
 <p>Taking into account that it should be a message, and that a phone was used, it is possible to deduce that it was written as SMS in older phones used to do. Again, some googling and using a very well known page for encoding/encryption algorithms (<a href="https://dcode.fr">dcode</a>), we find out that we have a way to """decrypt""" it (called <strong>Multi-tap Cipher (SMS Mode ABC)</strong>).</p>
 <p>After decryption we get: the string:</p>
 <pre><code>THEPASSWORDISMONKEYSARECOOLIFYOUGIVETHEMBANANAS
 </code></pre>
-
 <p>Due to the format of the flag requires the "ONA{}" the final answer is: 
 <img alt="" src="../resources/sha1sum.png" /></p>
 <pre><code>ONA{8cce9ae2618ea9aff3a00f90c99e570842c528e9}
