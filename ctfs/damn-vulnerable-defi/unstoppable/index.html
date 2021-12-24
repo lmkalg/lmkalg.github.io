@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Unstoppable - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Unstoppable", url: "#_top", children: [
+              {title: "Statement", url: "#statement" },
+              {title: "Analysis", url: "#analysis" },
+              {title: "Exploit", url: "#exploit" },
+              {title: "Fix", url: "#fix" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/main.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../naive_receiver/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../naive_receiver/" class="btn btn-xs btn-link">
+        Naive Receiver
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../.." class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../.." class="btn btn-xs btn-link">
+        Home
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="unstoppable">Unstoppable</h1>
+<h2 id="statement">Statement</h2>
+<p>There's a lending pool with a million DVT tokens in balance, offering flash loans for free. If only there was a way to attack and stop the pool from offering flash loans ...
+You start with 100 DVT tokens in balance.</p>
+<h2 id="analysis">Analysis</h2>
+<p>According to the statement our mission is to try to stop the pool for offering flash loans. No need to extract money, empty an account or anything else. Just, freeze the contract. </p>
+<h3 id="understanding-contracts">Understanding contracts</h3>
+<p>There are two contracts:</p>
+<ul>
+<li><strong>UnstoppableLender.sol</strong>: Contract which implements the logic of the lending flash loans.</li>
+<li><strong>ReceiverUnstoppable.sol</strong>: Contract which implements the logic of receiving funds from the lending pool.</li>
+</ul>
+<p>Let's first analyze the lending pool contract: </p>
+<p>This contract implements a pool of ERC20 tokens (damnValuableToken). In fact, the address of the underlying token is provided in the constructor.</p>
+<p>It has two interesting functions: </p>
+<ul>
+<li><strong>depositTokens</strong>: Function that implements the deposit of tokens into the pool. Updating some internal variables. </li>
+<li><strong>flashLoan</strong>: Function that implements the lending logic. </li>
+</ul>
+<pre><code class="language-java">1.  function depositTokens(uint256 amount) external nonReentrant {
+2.        require(amount &gt; 0, &quot;Must deposit at least one token&quot;);
+3.        // Transfer token from sender. Sender must have first approved them.
+4.        damnValuableToken.transferFrom(msg.sender, address(this), amount);
+5.        poolBalance = poolBalance + amount;
+6.    }
+
+
+</code></pre>
+<p>Some comments about this function:</p>
+<ol>
+<li>It first checks that the amount of damnValuableToken (ERC20 token) to be deposited is greater than 0.</li>
+<li>It performs a transfer from the address calling this function (the wallet doing the deposit) to the current pool. In order to be able to execute such functionality, the wallet should've already provided with permissions to do that (allowance)</li>
+<li>It stores and updates an internal variable <strong>poolBalance</strong> which holds the current amount of tokens that the pool has.</li>
+</ol>
+<p>Now, let's move on to the following function:</p>
+<pre><code class="language-java">0. function flashLoan(uint256 borrowAmount) external nonReentrant {
+1.        require(borrowAmount &gt; 0, &quot;Must borrow at least one token&quot;);
+2.
+3.        uint256 balanceBefore = damnValuableToken.balanceOf(address(this));
+4.        require(balanceBefore &gt;= borrowAmount, &quot;Not enough tokens in pool&quot;);
+5.
+6.        // Ensured by the protocol via the `depositTokens` function
+7.        assert(poolBalance == balanceBefore);
+8.        
+9.        damnValuableToken.transfer(msg.sender, borrowAmount);
+10.        
+11.        IReceiver(msg.sender).receiveTokens(address(damnValuableToken), borrowAmount);
+12.        
+13.        uint256 balanceAfter = damnValuableToken.balanceOf(address(this));
+14.        require(balanceAfter &gt;= balanceBefore, &quot;Flash loan hasn't been paid back&quot;);
+18. }
+</code></pre>
+<p>Some notes about this code snippet: </p>
+<ol>
+<li>It has the <strong>nonReentrant</strong> modifier. So, no reentrancy possible. </li>
+<li>In the first three lines, it basically checks that the borrowed amount provided as a parameter is valid. In order to do so, it checks if it’s greater than zero and that it doesn't exceed the amount of tokens the lending pool has. If it does exceed, it reverts. </li>
+<li>The 7th line is a bit controversial and weird. It checks that the amount of damnValuableTokens that the pool currently has is the same as the internal variable that is updated in the <strong>depositTokens()</strong> function. Why is this carried out? Why would someone try to store the actual balance  if this information is already stored in the ERC20 token contract? Remember that calls to that function are free because they are reading the blockchain and not writing anything. </li>
+<li>Line 11 calls the <strong>receiveToken()</strong> function from the ReceiverUnstoppable contract. This is where the borrower would implement the logic to leverage the loan received.</li>
+<li>Line 13-14 basically ensures that the loan has been repaid (with fees). </li>
+</ol>
+<h3 id="final-solution">Final solution</h3>
+<p>According to the exercise statement we had to find a way to stop the pool offering loans. Line 7th seems very controversial as it is comparing two values that should be always the same but they are managed in different ways. If it was only possible to change one of them in order to desync them... 
+Well.. in fact it is actually possible. The <strong>depositTokens()</strong> is adding the deposited value to the internal value each time this function is called. On the other side, the ERC20 <strong>balanceOf()</strong> function, checks the amount of tokens that the address has according to the ERC20 contract. So.. is the <strong>depositTokens()</strong> the only way to deposit/send damnValuableToken  tokens in this pool? Clearly, no. What somebody could do is just to send 1 damnValuableToken to this pool address and this will make "update" the balance of the pool's damnValuableTokens but the <strong>poolBalance</strong> will remain the same. </p>
+<p>By desyncing these two variables, line 7th will always fail and therefore this function will always revert, stopping the pool from giving flash loans.</p>
+<h2 id="exploit">Exploit</h2>
+<p>I modified the <strong>unstoppable.challenge.js</strong> with: </p>
+<pre><code class="language-javascript"> it('Exploit', async function () {
+    await this.token.connect(attacker).transfer(this.pool.address, 1)
+});
+</code></pre>
+<h2 id="fix">Fix</h2>
+<p>As part of my learning phase of Smart Contracts Security, I like to think how I could solve this issue. 
+However, in this particular case I think that the <strong>poolBalance</strong> variable is useless in this context. I'd remove it and therefore remove the check in line 7th.</p>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
