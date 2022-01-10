@@ -1330,9 +1330,9 @@ But don't worry, you might be able to take them all from the pool. In a single t
 7.    function flashLoan(uint256 amount, address borrower, address target, bytes calldata data) external;
 8.    function damnValuableToken() external returns (IERC20);
 9.   }
-10 
-11. contract AttackerTruster is Ownable {
-12.    
+10. contract AttackerTruster is Ownable {
+11.    ITrusterLenderPool private pool; 
+12.    IERC20 private damn_token;
 13.    constructor (address pool_address, address attacker_address){
 14.        pool = ITrusterLenderPool(pool_address);
 15.        damn_token = IERC20(pool.damnValuableToken());
